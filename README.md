@@ -9,8 +9,7 @@
 * Easy-to-use
 * Fast and efficient
 
-## How to use
-To use AsyncNetwork the easiest way is with Maven, you can do that by using the following:
+## Maven
 ```xml
 <dependency>
     <groupId>com.github.oughttoprevail</groupId>
@@ -18,6 +17,7 @@ To use AsyncNetwork the easiest way is with Maven, you can do that by using the 
     <version>1.0.0</version>
 </dependency>
 ```
+Here is <a href="https://search.maven.org/classic/#artifactdetails%7Ccom.github.oughttoprevail%7CAsyncNetwork%7C1.0.0%7Cjar">The Central Repository</a>.
 
 ## How to use
 To create a client you would do:
