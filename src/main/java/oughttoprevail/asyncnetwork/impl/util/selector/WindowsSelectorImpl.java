@@ -21,6 +21,7 @@ import java.nio.ByteOrder;
 
 import oughttoprevail.asyncnetwork.exceptions.LoadException;
 import oughttoprevail.asyncnetwork.impl.Util;
+import oughttoprevail.asyncnetwork.impl.packet.ByteBufferPool;
 import oughttoprevail.asyncnetwork.impl.server.IndexedListImpl;
 import oughttoprevail.asyncnetwork.impl.util.writer.server.PendingWrite;
 import oughttoprevail.asyncnetwork.util.IndexedList;
@@ -72,7 +73,7 @@ public class WindowsSelectorImpl implements WindowsSelector
 	public void createSelector(int serverSocket, int threads) throws IOException
 	{
 		handle = createSelector0(serverSocket, threads);
-		addressesBuffer = ByteBuffer.allocateDirect(addressSize * 2);
+		addressesBuffer = ByteBufferPool.INSTANCE.take(addressSize * 2);
 		addressesBuffer.order(ByteOrder.nativeOrder());
 		addressesBufferAddress = Util.address(addressesBuffer);
 	}

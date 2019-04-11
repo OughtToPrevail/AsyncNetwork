@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import oughttoprevail.asyncnetwork.impl.Util;
+import oughttoprevail.asyncnetwork.impl.packet.ByteBufferPool;
 import oughttoprevail.asyncnetwork.util.IndexesBuffer;
 
 public class IndexesBufferImpl implements IndexesBuffer
@@ -27,7 +28,7 @@ public class IndexesBufferImpl implements IndexesBuffer
 	
 	public IndexesBufferImpl(int size)
 	{
-		byteBuffer = ByteBuffer.allocateDirect(size);
+		byteBuffer = ByteBufferPool.INSTANCE.take(size);
 		byteBuffer.order(ByteOrder.nativeOrder());
 	}
 	

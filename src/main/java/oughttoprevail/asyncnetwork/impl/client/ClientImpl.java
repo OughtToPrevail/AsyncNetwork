@@ -72,7 +72,7 @@ public class ClientImpl extends ChannelImpl<Client> implements Client
 	 */
 	public ClientImpl(int bufferSize)
 	{
-		super(ByteBuffer.allocateDirect(bufferSize));
+		super(bufferSize);
 		try
 		{
 			channel = SocketChannel.open();

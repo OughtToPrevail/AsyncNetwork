@@ -44,10 +44,15 @@ import oughttoprevail.asyncnetwork.impl.Util;
  */
 public class ByteBufferPool
 {
+	private static final int POWER_MAX = 13;
 	/**
 	 * Max direct buffer to be allocated, equals to 8 mega bytes.
 	 */
 	private static final int EIGHT_MB = 1000000 * 8;
+	/**
+	 * Max range between buffers that should be created.
+	 */
+	private static final int RANGE = 512;
 	
 	/**
 	 * Static INSTANCE of this {@link ByteBufferPool}.
@@ -64,6 +69,17 @@ public class ByteBufferPool
 	 * Current size of direct {@link ByteBuffer} allocated by this {@link ByteBufferPool}.
 	 */
 	private int size;
+	
+	public ByteBufferPool()
+	{
+		for(int i = 0; i < POWER_MAX; i++)
+		{
+			int bufferSize = (int) Math.pow(2, i);
+			Deque<ByteBuffer> deque = new ArrayDeque<>();
+			deque.offerLast(create(bufferSize));
+			buffers.put(bufferSize, deque);
+		}
+	}
 	
 	/**
 	 * Creates a new direct {@link ByteBuffer}.
@@ -100,7 +116,7 @@ public class ByteBufferPool
 	}
 	
 	/**
-	 * Takes a bigger or equal to the specified size direct {@link ByteBuffer} from the queue if one
+	 * Takes a more (no bigger than {@code size + ByteBufferPool.RANGE}) or equal to the specified size direct {@link ByteBuffer} from the queue if one
 	 * exists, if one doesn't exist a new {@link ByteBuffer} with the specified size is created.
 	 *
 	 * @param size of the requested {@link ByteBuffer}
@@ -132,7 +148,7 @@ public class ByteBufferPool
 			
 			// The first entry that was found had no ByteBuffers available, so we must now look at every greater
 			// entry to see if one can be found. If one still cannot be found, allocate a new one.
-			Collection<Deque<ByteBuffer>> tailMap = buffers.tailMap(size, false).values();
+			Collection<Deque<ByteBuffer>> tailMap = buffers.subMap(size, size + RANGE).values();
 			for(Deque<ByteBuffer> byteBuffers : tailMap)
 			{
 				if(!byteBuffers.isEmpty())
@@ -141,28 +157,6 @@ public class ByteBufferPool
 				}
 			}
 			return create(size);
-		}
-	}
-	
-	/**
-	 * Takes a equal to the specified size direct {@link ByteBuffer} from the queue if one
-	 * exists, if one doesn't exist a new {@link ByteBuffer} with the specified size is created.
-	 *
-	 * @param size of the requested {@link ByteBuffer}
-	 * @return a direct {@link ByteBuffer} from the queue if one
-	 * exists, if one doesn't exist a new {@link ByteBuffer} is created
-	 */
-	public ByteBuffer takeExactly(int size)
-	{
-		synchronized(buffers)
-		{
-			Deque<ByteBuffer> byteBuffers = buffers.get(size);
-			if(byteBuffers == null)
-			{
-				buffers.put(size, new ArrayDeque<>(3));
-				return create(size);
-			}
-			return byteBuffers.isEmpty() ? create(size) : byteBuffers.poll();
 		}
 	}
 	

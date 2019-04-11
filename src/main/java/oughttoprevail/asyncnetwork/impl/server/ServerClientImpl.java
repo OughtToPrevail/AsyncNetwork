@@ -24,7 +24,6 @@ import oughttoprevail.asyncnetwork.Server;
 import oughttoprevail.asyncnetwork.ServerClient;
 import oughttoprevail.asyncnetwork.ServerClientManager;
 import oughttoprevail.asyncnetwork.impl.ChannelImpl;
-import oughttoprevail.asyncnetwork.impl.packet.ByteBufferPool;
 import oughttoprevail.asyncnetwork.impl.util.Validator;
 import oughttoprevail.asyncnetwork.impl.util.writer.Writer;
 import oughttoprevail.asyncnetwork.impl.util.writer.server.ServerWriter;
@@ -57,7 +56,7 @@ public abstract class ServerClientImpl extends ChannelImpl<ServerClient> impleme
 	
 	public ServerClientImpl(Server server, SocketChannel channel, int clientsIndex)
 	{
-		super(ByteBufferPool.INSTANCE.takeExactly(server.getBufferSize()));
+		super(server.getBufferSize());
 		this.channel = channel;
 		manager = createServerClientManager(server, clientsIndex);
 	}

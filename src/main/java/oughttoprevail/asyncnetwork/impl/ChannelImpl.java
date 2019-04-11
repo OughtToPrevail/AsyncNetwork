@@ -47,16 +47,16 @@ public abstract class ChannelImpl<T extends Channel> implements Channel<T>
 	 */
 	protected abstract T getThis();
 	
-	private final int readBufferSize;
+	private final int bufferSize;
 	private final ByteBuffer readBuffer;
 	
 	private final Reader reader;
 	private final Writer<T> writer;
 	
-	protected ChannelImpl(ByteBuffer readBuffer)
+	protected ChannelImpl(int bufferSize)
 	{
-		readBufferSize = readBuffer.capacity();
-		this.readBuffer = readBuffer;
+		this.bufferSize = bufferSize;
+		this.readBuffer = ByteBufferPool.INSTANCE.take(bufferSize);
 		reader = createReader();
 		writer = createWriter();
 	}
@@ -539,7 +539,7 @@ public abstract class ChannelImpl<T extends Channel> implements Channel<T>
 			if(length > byteBuffer.capacity())
 			{
 				manager().exception(new IndexOutOfBoundsException(
-						"Received a string with the length bigger than the readBufferSize"));
+						"Received a string with the length bigger than the bufferSize"));
 				return;
 			}
 			readByteBuffer(byteBuf1 ->
@@ -578,7 +578,7 @@ public abstract class ChannelImpl<T extends Channel> implements Channel<T>
 	@Override
 	public int getBufferSize()
 	{
-		return readBufferSize;
+		return bufferSize;
 	}
 	
 	private Consumer<DisconnectionType> onDisconnect;

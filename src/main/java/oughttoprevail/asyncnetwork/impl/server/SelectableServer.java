@@ -33,6 +33,7 @@ import oughttoprevail.asyncnetwork.IServerClient;
 import oughttoprevail.asyncnetwork.SelectorImplementation;
 import oughttoprevail.asyncnetwork.exceptions.SelectException;
 import oughttoprevail.asyncnetwork.impl.Util;
+import oughttoprevail.asyncnetwork.impl.packet.ByteBufferPool;
 import oughttoprevail.asyncnetwork.impl.util.StatedCount;
 import oughttoprevail.asyncnetwork.impl.util.Validator;
 import oughttoprevail.asyncnetwork.impl.util.selector.flags.LinuxSelectorFlags;
@@ -279,7 +280,7 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 			{
 				ThreadCreator.newThread("WindowsSelector (" + i + ")", () ->
 				{
-					ByteBuffer result = ByteBuffer.allocateDirect(/*opcode*/Util.BYTE_BYTES + /*client index*/Util.INT_BYTES + /*is read*/Util.BYTE_BYTES + /*the received bytes*/Util.INT_BYTES);
+					ByteBuffer result = ByteBufferPool.INSTANCE.take(/*opcode*/Util.BYTE_BYTES + /*client index*/Util.INT_BYTES + /*is read*/Util.BYTE_BYTES + /*the received bytes*/Util.INT_BYTES);
 					result.order(ByteOrder.nativeOrder());
 					long address = Util.address(result);
 					int selectTimeout = getSelectTimeout();
