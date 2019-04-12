@@ -17,7 +17,7 @@ package oughttoprevail.asyncnetwork.impl.packet;
 
 import oughttoprevail.asyncnetwork.packet.Packet;
 import oughttoprevail.asyncnetwork.packet.PacketBuilder;
-import oughttoprevail.asyncnetwork.packet.Serializable;
+import oughttoprevail.asyncnetwork.packet.SerDes;
 
 public class SynchronizedPacketBuilderImpl extends PacketBuilderImpl
 {
@@ -191,17 +191,18 @@ public class SynchronizedPacketBuilderImpl extends PacketBuilderImpl
 	}
 	
 	/**
-	 * Puts the specified serializable in the packet.
+	 * Puts the specified object in the packet after serialization made by specified serDes.
 	 *
-	 * @param serializable to put in the packet
+	 * @param object to put in the packet
+	 * @param serDes serializes the specified object
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putObject(Serializable serializable)
+	public <T> PacketBuilder putObject(T object, SerDes<T> serDes)
 	{
 		synchronized(lock)
 		{
-			return super.putObject(serializable);
+			return super.putObject(object, serDes);
 		}
 	}
 	

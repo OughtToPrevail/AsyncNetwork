@@ -134,12 +134,13 @@ public interface PacketBuilder
 	PacketBuilder putString(String s);
 	
 	/**
-	 * Puts the specified serializable in the packet.
+	 * Puts the specified object in the packet after serialization made by specified serDes.
 	 *
-	 * @param serializable to put in the packet
+	 * @param object to put in the packet
+	 * @param serDes serializes the specified object
 	 * @return this
 	 */
-	PacketBuilder putObject(Serializable serializable);
+	<T> PacketBuilder putObject(T object, SerDes<T> serDes);
 	
 	/**
 	 * Returns the total size in bytes of the packet.

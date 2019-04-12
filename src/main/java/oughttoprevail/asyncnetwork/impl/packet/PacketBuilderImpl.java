@@ -22,7 +22,7 @@ import java.util.Deque;
 import oughttoprevail.asyncnetwork.impl.Util;
 import oughttoprevail.asyncnetwork.packet.Packet;
 import oughttoprevail.asyncnetwork.packet.PacketBuilder;
-import oughttoprevail.asyncnetwork.packet.Serializable;
+import oughttoprevail.asyncnetwork.packet.SerDes;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
 ;
@@ -205,15 +205,31 @@ public class PacketBuilderImpl implements PacketBuilder
 	}
 	
 	/**
-	 * Puts the specified serializable in the packet.
+	 * Puts the specified object in the packet after serialization made by specified serDes.
 	 *
-	 * @param serializable to put in the packet
+	 * @param object to put in the packet
+	 * @param serDes serializes the specified object
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putObject(Serializable serializable)
+	public <T> PacketBuilder putObject(T object, SerDes<T> serDes)
 	{
-		return enqueue(serializable::serialize, serializable.getSerializedSize());
+		short serializedLength = serDes.getSerializedLength(object);
+		if(serializedLength <= 0)
+		{
+			throw new IllegalArgumentException("Serialized length cannot be less than 0!");
+		}
+		if(serDes.isFixedLength())
+		{
+			return enqueue(byteBuffer -> serDes.serialize(object, byteBuffer), serializedLength);
+		} else
+		{
+			return enqueue(byteBuffer ->
+			{
+				byteBuffer.putShort(serializedLength);
+				serDes.serialize(object, byteBuffer);
+			}, serializedLength);
+		}
 	}
 	
 	/**
@@ -253,7 +269,7 @@ public class PacketBuilderImpl implements PacketBuilder
 	
 	private ByteBuffer createByteBuffer()
 	{
-		ByteBuffer packetBuffer = ByteBufferPool.INSTANCE.take(size);
+		ByteBuffer packetBuffer = ByteBufferPool.getInstance().take(size);
 		for(Consumer<ByteBuffer> instruction : instructions)
 		{
 			instruction.accept(packetBuffer);

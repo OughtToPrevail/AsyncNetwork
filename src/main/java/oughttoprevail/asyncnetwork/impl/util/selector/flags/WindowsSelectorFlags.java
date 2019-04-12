@@ -83,7 +83,7 @@ public abstract class WindowsSelectorFlags<S extends IServerClient>
 		localAddress = findOffset(socketChannelImpl, "localAddress");
 		remoteAddress = findOffset(socketChannelImpl, "remoteAddress");
 		state = findOffset(socketChannelImpl, "state");
-		socketAddresses = ByteBufferPool.INSTANCE.take(Byte.BYTES * 2 + Short.BYTES * 2 + Math.max(INET4_BYTES, INET6_BYTES) * 2);
+		socketAddresses = ByteBufferPool.getInstance().take(Byte.BYTES * 2 + Short.BYTES * 2 + Math.max(INET4_BYTES, INET6_BYTES) * 2);
 		socketAddresses.order(ByteOrder.nativeOrder());
 		socketAddressesAddress = Util.address(socketAddresses);
 	}

@@ -44,6 +44,21 @@ import oughttoprevail.asyncnetwork.impl.Util;
  */
 public class ByteBufferPool
 {
+	/**
+	 * Static INSTANCE of this {@link ByteBufferPool}.
+	 */
+	private static final ByteBufferPool INSTANCE = new ByteBufferPool();
+	
+	/**
+	 * Returns a static instance of this {@link ByteBufferPool}.
+	 *
+	 * @return a static instance of this {@link ByteBufferPool}
+	 */
+	public static ByteBufferPool getInstance()
+	{
+		return INSTANCE;
+	}
+	
 	private static final int POWER_MAX = 13;
 	/**
 	 * Max direct buffer to be allocated, equals to 8 mega bytes.
@@ -53,11 +68,6 @@ public class ByteBufferPool
 	 * Max range between buffers that should be created.
 	 */
 	private static final int RANGE = 512;
-	
-	/**
-	 * Static INSTANCE of this {@link ByteBufferPool}.
-	 */
-	public static final ByteBufferPool INSTANCE = new ByteBufferPool();
 	
 	/**
 	 * The buffer map, the key is the size of the buffers in the value,
@@ -70,7 +80,7 @@ public class ByteBufferPool
 	 */
 	private int size;
 	
-	public ByteBufferPool()
+	private ByteBufferPool()
 	{
 		for(int i = 0; i < POWER_MAX; i++)
 		{
@@ -78,6 +88,52 @@ public class ByteBufferPool
 			Deque<ByteBuffer> deque = new ArrayDeque<>();
 			deque.offerLast(create(bufferSize));
 			buffers.put(bufferSize, deque);
+		}
+	}
+	
+	/**
+	 * Takes a more (no bigger than {@code size + ByteBufferPool.RANGE}) or equal to the specified size direct {@link ByteBuffer} from the queue if one
+	 * exists, if one doesn't exist a new {@link ByteBuffer} with the specified size is created.
+	 *
+	 * @param size of the requested {@link ByteBuffer}
+	 * @return a direct {@link ByteBuffer} from the queue if one
+	 * exists, if one doesn't exist a new {@link ByteBuffer} is created
+	 */
+	public ByteBuffer take(int size)
+	{
+		synchronized(buffers)
+		{
+			Entry<Integer, Deque<ByteBuffer>> entry = buffers.ceilingEntry(size);
+			
+			// If entry is null, there exists no ByteBuffer within the map with a capacity greater than or equal to
+			// the value requested. For that reason, one should be created.
+			if(entry == null)
+			{
+				buffers.put(size, new ArrayDeque<>(3));
+				return create(size);
+			}
+			
+			// Even though the entry isn't null, the deque that was found may not be. If it isn't, a ByteBuffer
+			// should be taken from there and returned.
+			Deque<ByteBuffer> deque = entry.getValue();
+			
+			if(!deque.isEmpty())
+			{
+				return prepare(deque.poll(), size);
+			}
+			
+			// The first entry that was found had no ByteBuffers available, so we must now look at greater
+			// entry that doesn't pass the ByteBufferPool.RANGE to see if one can be found.
+			// If one still cannot be found, allocate a new one.
+			Collection<Deque<ByteBuffer>> tailMap = buffers.subMap(size, size + RANGE).values();
+			for(Deque<ByteBuffer> byteBuffers : tailMap)
+			{
+				if(!byteBuffers.isEmpty())
+				{
+					return prepare(byteBuffers.poll(), size);
+				}
+			}
+			return create(size);
 		}
 	}
 	
@@ -116,48 +172,16 @@ public class ByteBufferPool
 	}
 	
 	/**
-	 * Takes a more (no bigger than {@code size + ByteBufferPool.RANGE}) or equal to the specified size direct {@link ByteBuffer} from the queue if one
-	 * exists, if one doesn't exist a new {@link ByteBuffer} with the specified size is created.
+	 * Prepares the specified byteBuffer for a return statement.
 	 *
-	 * @param size of the requested {@link ByteBuffer}
-	 * @return a direct {@link ByteBuffer} from the queue if one
-	 * exists, if one doesn't exist a new {@link ByteBuffer} is created
+	 * @param byteBuffer to prepare for a return statement
+	 * @param size of the buffer requested in {@link #take(int)}
+	 * @return the specified byteBuffer after a few changes
 	 */
-	public ByteBuffer take(int size)
+	private ByteBuffer prepare(ByteBuffer byteBuffer, int size)
 	{
-		synchronized(buffers)
-		{
-			Entry<Integer, Deque<ByteBuffer>> entry = buffers.ceilingEntry(size);
-			
-			// If entry is null, there exists no ByteBuffer within the map with a capacity greater than or equal to
-			// the value requested. For that reason, one should be created.
-			if(entry == null)
-			{
-				buffers.put(size, new ArrayDeque<>(3));
-				return create(size);
-			}
-			
-			// Even though the entry isn't null, the deque that was found may not be. If it isn't, a ByteBuffer
-			// should be taken from there and returned.
-			Deque<ByteBuffer> deque = entry.getValue();
-			
-			if(!deque.isEmpty())
-			{
-				return (ByteBuffer) deque.poll().clear().limit(size);
-			}
-			
-			// The first entry that was found had no ByteBuffers available, so we must now look at every greater
-			// entry to see if one can be found. If one still cannot be found, allocate a new one.
-			Collection<Deque<ByteBuffer>> tailMap = buffers.subMap(size, size + RANGE).values();
-			for(Deque<ByteBuffer> byteBuffers : tailMap)
-			{
-				if(!byteBuffers.isEmpty())
-				{
-					return (ByteBuffer) byteBuffers.poll().clear().limit(size);
-				}
-			}
-			return create(size);
-		}
+		byteBuffer.clear().limit(size);
+		return byteBuffer.slice();
 	}
 	
 	/**

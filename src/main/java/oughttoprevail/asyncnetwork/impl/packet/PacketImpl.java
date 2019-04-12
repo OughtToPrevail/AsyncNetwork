@@ -134,7 +134,7 @@ public class PacketImpl implements Packet
 	@Override
 	public void close()
 	{
-		ByteBufferPool.INSTANCE.give(packetBuffer);
+		ByteBufferPool.getInstance().give(packetBuffer);
 		packetBuffer = null;
 	}
 	

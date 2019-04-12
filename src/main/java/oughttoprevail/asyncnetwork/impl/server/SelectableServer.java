@@ -280,7 +280,7 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 			{
 				ThreadCreator.newThread("WindowsSelector (" + i + ")", () ->
 				{
-					ByteBuffer result = ByteBufferPool.INSTANCE.take(/*opcode*/Util.BYTE_BYTES + /*client index*/Util.INT_BYTES + /*is read*/Util.BYTE_BYTES + /*the received bytes*/Util.INT_BYTES);
+					ByteBuffer result = ByteBufferPool.getInstance().take(/*opcode*/Util.BYTE_BYTES + /*client index*/Util.INT_BYTES + /*is read*/Util.BYTE_BYTES + /*the received bytes*/Util.INT_BYTES);
 					result.order(ByteOrder.nativeOrder());
 					long address = Util.address(result);
 					int selectTimeout = getSelectTimeout();

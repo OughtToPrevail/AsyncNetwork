@@ -33,7 +33,7 @@ import oughttoprevail.asyncnetwork.impl.server.ServerClientManagerImpl;
 import oughttoprevail.asyncnetwork.impl.util.Validator;
 import oughttoprevail.asyncnetwork.impl.util.reader.Reader;
 import oughttoprevail.asyncnetwork.impl.util.writer.Writer;
-import oughttoprevail.asyncnetwork.packet.Deserializer;
+import oughttoprevail.asyncnetwork.packet.SerDes;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
 ;
@@ -56,7 +56,7 @@ public abstract class ChannelImpl<T extends Channel> implements Channel<T>
 	protected ChannelImpl(int bufferSize)
 	{
 		this.bufferSize = bufferSize;
-		this.readBuffer = ByteBufferPool.INSTANCE.take(bufferSize);
+		this.readBuffer = ByteBufferPool.getInstance().take(bufferSize);
 		reader = createReader();
 		writer = createWriter();
 	}
@@ -141,7 +141,7 @@ public abstract class ChannelImpl<T extends Channel> implements Channel<T>
 				ChannelImpl.this.close(disconnectionType);
 				if(isClosed() != closedBefore)
 				{
-					ByteBufferPool.INSTANCE.give(readBuffer);
+					ByteBufferPool.getInstance().give(readBuffer);
 					server.manager().clientDisconnected(clientsIndex);
 				}
 			}
@@ -535,7 +535,8 @@ public abstract class ChannelImpl<T extends Channel> implements Channel<T>
 		readByteBuffer(byteBuffer ->
 		{
 			short lengthAsShort = byteBuffer.getShort();
-			int length = Short.toUnsignedInt(lengthAsShort);
+			//switch to unsigned length
+			int length = ((int) lengthAsShort) & 0xFFFF;
 			if(length > byteBuffer.capacity())
 			{
 				manager().exception(new IndexOutOfBoundsException(
@@ -553,21 +554,29 @@ public abstract class ChannelImpl<T extends Channel> implements Channel<T>
 	}
 	
 	/**
-	 * Calls the specified consumer with a received object after deserialization.
+	 * Calls the specified consumer with a received object after deserialization made by specified serDes.
 	 *
 	 * @param consumer the consumer that will be called with a received object
-	 * @param deserializer which can deserialize the {@link ByteBuffer} to the {@link Object}
+	 * @param serDes which will deserialize the {@link ByteBuffer} to the {@link Object}
 	 * @param always whether it will read until the channel is closed
 	 * @param <O> the type of {@link Object} being read.
 	 * @return this
 	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
 	 */
 	@Override
-	public <O> T readObject(Consumer<O> consumer, Deserializer<O> deserializer, boolean always)
+	public <O> T readObject(Consumer<O> consumer, SerDes<O> serDes, boolean always)
 	{
-		return readByteBuffer(byteBuffer -> consumer.accept(deserializer.deserialize(byteBuffer)),
-				deserializer.getSerializedLength(),
-				always);
+		if(serDes.isFixedLength())
+		{
+			return readByteBuffer(byteBuffer -> consumer.accept(serDes.deserialize(byteBuffer)),
+					serDes.getSerializedLength(null),
+					always);
+		} else
+		{
+			return readShort(length -> readByteBuffer(byteBuffer -> consumer.accept(serDes.deserialize(byteBuffer)),
+					length,
+					false), always);
+		}
 	}
 	
 	/**

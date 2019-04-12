@@ -20,6 +20,8 @@ import java.nio.channels.SocketChannel;
 
 import oughttoprevail.asyncnetwork.Channel;
 import oughttoprevail.asyncnetwork.ConditionWaiter;
+import oughttoprevail.asyncnetwork.IServer;
+import oughttoprevail.asyncnetwork.IServerClient;
 import oughttoprevail.asyncnetwork.Server;
 import oughttoprevail.asyncnetwork.ServerClient;
 import oughttoprevail.asyncnetwork.ServerClientManager;
@@ -29,8 +31,6 @@ import oughttoprevail.asyncnetwork.impl.util.writer.Writer;
 import oughttoprevail.asyncnetwork.impl.util.writer.server.ServerWriter;
 import oughttoprevail.asyncnetwork.impl.util.writer.server.WindowsWriter;
 import oughttoprevail.asyncnetwork.util.Consumer;
-
-;
 
 public abstract class ServerClientImpl extends ChannelImpl<ServerClient> implements ServerClient
 {

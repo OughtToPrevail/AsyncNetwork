@@ -28,7 +28,7 @@ public class IndexesBufferImpl implements IndexesBuffer
 	
 	public IndexesBufferImpl(int size)
 	{
-		byteBuffer = ByteBufferPool.INSTANCE.take(size);
+		byteBuffer = ByteBufferPool.getInstance().take(size);
 		byteBuffer.order(ByteOrder.nativeOrder());
 	}
 	

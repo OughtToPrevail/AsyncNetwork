@@ -25,7 +25,7 @@ import java.nio.channels.SocketChannel;
 
 import oughttoprevail.asyncnetwork.exceptions.ChannelClosedException;
 import oughttoprevail.asyncnetwork.impl.ChannelImpl;
-import oughttoprevail.asyncnetwork.packet.Deserializer;
+import oughttoprevail.asyncnetwork.packet.SerDes;
 import oughttoprevail.asyncnetwork.util.Consumer;
 import oughttoprevail.asyncnetwork.util.OS;
 
@@ -282,16 +282,16 @@ public interface Channel<T extends Channel>
 	T readString(Consumer<String> consumer, boolean always);
 	
 	/**
-	 * Calls the specified consumer with a received object after deserialization.
+	 * Calls the specified consumer with a received object after deserialization made by specified serDes.
 	 *
 	 * @param consumer the consumer that will be called with a received object
-	 * @param deserializer which can deserialize the {@link ByteBuffer} to the {@link Object}
+	 * @param serDes which will deserialize the {@link ByteBuffer} to the {@link Object}
 	 * @param always whether it will read until the channel is closed
 	 * @param <O> the type of {@link Object} being read.
 	 * @return this
 	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
 	 */
-	<O> T readObject(Consumer<O> consumer, Deserializer<O> deserializer, boolean always);
+	<O> T readObject(Consumer<O> consumer, SerDes<O> serDes, boolean always);
 	
 	/**
 	 * Returns the {@link ByteBuffer} size.

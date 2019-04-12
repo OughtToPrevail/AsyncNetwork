@@ -73,7 +73,7 @@ public class WindowsSelectorImpl implements WindowsSelector
 	public void createSelector(int serverSocket, int threads) throws IOException
 	{
 		handle = createSelector0(serverSocket, threads);
-		addressesBuffer = ByteBufferPool.INSTANCE.take(addressSize * 2);
+		addressesBuffer = ByteBufferPool.getInstance().take(addressSize * 2);
 		addressesBuffer.order(ByteOrder.nativeOrder());
 		addressesBufferAddress = Util.address(addressesBuffer);
 	}
