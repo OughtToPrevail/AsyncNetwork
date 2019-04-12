@@ -107,7 +107,7 @@ public class ByteBufferPool
 			
 			// If entry is null, there exists no ByteBuffer within the map with a capacity greater than or equal to
 			// the value requested. For that reason, one should be created.
-			if(entry == null || entry.getKey() > RANGE)
+			if(entry == null || entry.getKey() > size + RANGE)
 			{
 				buffers.put(size, new ArrayDeque<>(3));
 				return create(size);
