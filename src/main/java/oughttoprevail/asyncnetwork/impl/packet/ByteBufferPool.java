@@ -107,7 +107,7 @@ public class ByteBufferPool
 			
 			// If entry is null, there exists no ByteBuffer within the map with a capacity greater than or equal to
 			// the value requested. For that reason, one should be created.
-			if(entry == null)
+			if(entry == null || entry.getKey() > RANGE)
 			{
 				buffers.put(size, new ArrayDeque<>(3));
 				return create(size);
@@ -116,7 +116,6 @@ public class ByteBufferPool
 			// Even though the entry isn't null, the deque that was found may not be. If it isn't, a ByteBuffer
 			// should be taken from there and returned.
 			Deque<ByteBuffer> deque = entry.getValue();
-			
 			if(!deque.isEmpty())
 			{
 				return prepare(deque.poll(), size);
