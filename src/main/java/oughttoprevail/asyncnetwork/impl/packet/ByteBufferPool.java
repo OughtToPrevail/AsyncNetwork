@@ -82,7 +82,7 @@ public class ByteBufferPool
 	
 	private ByteBufferPool()
 	{
-		for(int i = 0; i < POWER_MAX; i++)
+		for(int i = 1; i <= POWER_MAX; i++)
 		{
 			int bufferSize = (int) Math.pow(2, i);
 			Deque<ByteBuffer> deque = new ArrayDeque<>();
