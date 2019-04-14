@@ -62,7 +62,7 @@ public abstract class ServerClientManagerImpl<S extends IServer> implements Serv
 	/**
 	 * Sets the {@link SelectionKey} of {@code selectionKey} to the specified {@code selectionKey}.
 	 *
-	 * @param selectionKey the value that {@code selectionKey} will be setValue to
+	 * @param selectionKey the value that {@code selectionKey} will be set to
 	 */
 	@Override
 	public void setSelectionKey(SelectionKey selectionKey)
@@ -71,9 +71,9 @@ public abstract class ServerClientManagerImpl<S extends IServer> implements Serv
 	}
 	
 	/**
-	 * Returns the channel's selection key or null if it was never setValue.
+	 * Returns the channel's selection key or null if it was never set.
 	 *
-	 * @return the channel's selection key or null if it was never setValue
+	 * @return the channel's selection key or null if it was never set
 	 */
 	@Override
 	public SelectionKey getSelectionKey()

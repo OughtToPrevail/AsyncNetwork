@@ -20,8 +20,6 @@ import java.nio.channels.SocketChannel;
 
 import oughttoprevail.asyncnetwork.Channel;
 import oughttoprevail.asyncnetwork.ConditionWaiter;
-import oughttoprevail.asyncnetwork.IServer;
-import oughttoprevail.asyncnetwork.IServerClient;
 import oughttoprevail.asyncnetwork.Server;
 import oughttoprevail.asyncnetwork.ServerClient;
 import oughttoprevail.asyncnetwork.ServerClientManager;
@@ -50,7 +48,7 @@ public abstract class ServerClientImpl extends ChannelImpl<ServerClient> impleme
 	 */
 	private final SocketChannel channel;
 	/**
-	 * The manager of this {@link ServerClient}, it will handle sensitive calls.
+	 * The manager of this {@link ServerClient}, it will give access to more sensitive data.
 	 */
 	private final ServerClientManager<Server> manager;
 	
@@ -73,7 +71,7 @@ public abstract class ServerClientImpl extends ChannelImpl<ServerClient> impleme
 	}
 	
 	/**
-	 * Calls {@link Channel#write(ByteBuffer, Consumer)} and blocks until the write has successfully complete.
+	 * Invokes {@link Channel#write(ByteBuffer, Consumer)} and blocks until the write has successfully complete.
 	 *
 	 * @param waiter the {@link ConditionWaiter} that will block until the write has successfully complete
 	 * @return this

@@ -21,6 +21,7 @@ import java.nio.ByteOrder;
 
 import oughttoprevail.asyncnetwork.exceptions.LoadException;
 import oughttoprevail.asyncnetwork.impl.Util;
+import oughttoprevail.asyncnetwork.impl.packet.ByteBufferElement;
 import oughttoprevail.asyncnetwork.impl.packet.ByteBufferPool;
 import oughttoprevail.asyncnetwork.impl.server.IndexedListImpl;
 import oughttoprevail.asyncnetwork.impl.util.writer.server.PendingWrite;
@@ -51,6 +52,7 @@ public class WindowsSelectorImpl implements WindowsSelector
 	}
 	
 	private long handle;
+	private ByteBufferElement addressesBufferElement;
 	private ByteBuffer addressesBuffer;
 	private long addressesBufferAddress;
 	
@@ -73,7 +75,8 @@ public class WindowsSelectorImpl implements WindowsSelector
 	public void createSelector(int serverSocket, int threads) throws IOException
 	{
 		handle = createSelector0(serverSocket, threads);
-		addressesBuffer = ByteBufferPool.getInstance().take(addressSize * 2);
+		addressesBufferElement = ByteBufferPool.getInstance().take(addressSize * 2);
+		addressesBuffer = addressesBufferElement.getByteBuffer();
 		addressesBuffer.order(ByteOrder.nativeOrder());
 		addressesBufferAddress = Util.address(addressesBuffer);
 	}
@@ -138,7 +141,7 @@ public class WindowsSelectorImpl implements WindowsSelector
 	 *
 	 * @param serverSocket the server socket that the new client socket will be accepted from.
 	 * @param index the index that will be saved as extra data (completion key) when registering
-	 * @param threads the {@link oughttoprevail.asyncnetwork.Server} threads count that will be setValue
+	 * @param threads the {@link oughttoprevail.asyncnetwork.Server} threads count that will be set
 	 * @return the new accepted client socket.
 	 */
 	@Override
@@ -156,7 +159,7 @@ public class WindowsSelectorImpl implements WindowsSelector
 	public void close() throws IOException
 	{
 		close0(handle);
-		Util.dispose(addressesBuffer);
+		ByteBufferPool.getInstance().give(addressesBufferElement);
 	}
 	
 	/**
@@ -187,7 +190,6 @@ public class WindowsSelectorImpl implements WindowsSelector
 	@Override
 	public void WSASend(int clientSocket, long writeBufferAddress, int length, PendingWrite pendingWrite) throws IOException
 	{
-//		System.out.println("PENDING WRITE SEND " + pendingWrite);
 		int index = pendingWrites.index();
 		pendingWrites.add(index, pendingWrite);
 		WSASend0(clientSocket, writeBufferAddress, length, index);
@@ -197,7 +199,7 @@ public class WindowsSelectorImpl implements WindowsSelector
 	 * Creates a new completion port handle with the specified threads count.
 	 *
 	 * @param serverSocket the server socket who is using this selector.
-	 * @param threads the {@link oughttoprevail.asyncnetwork.Server} threads count that will be setValue
+	 * @param threads the {@link oughttoprevail.asyncnetwork.Server} threads count that will be set
 	 * when creating the completion port handle
 	 * @return the completion port handle as long
 	 * @throws IOException if the completion port has failed to copy
@@ -224,11 +226,11 @@ public class WindowsSelectorImpl implements WindowsSelector
 	 * is null then a {@link IOException} is thrown with the message "Failed GetQueuedCompletionStatus",
 	 * else {@link oughttoprevail.asyncnetwork.exceptions.SelectException} is thrown with the {@code eventIndex}.
 	 * If {@code success} is {@code true} then if the {@code event} is an accept {@code event} then the first byte
-	 * of the result is setValue to 3 and null is returned else if it isn't an accept {@code event} then
+	 * of the result is set to 3 and null is returned else if it isn't an accept {@code event} then
 	 * it must be a read or write {@code event} now whether this is a read or write {@code event} and pendingWrite is retrieved from the {@code event}.
 	 * After this the {@code event} freed ({@code free(event)}).
-	 * Now the first byte is setValue to 1, second byte to 1 if it is a read event and 0 if it is a write event, the next 4 bytes (third to seventh)
-	 * are setValue to the integer value of the index that the {@link oughttoprevail.asyncnetwork.IServerClient} is located in
+	 * Now the first byte is set to 1, second byte to 1 if it is a read event and 0 if it is a write event, the next 4 bytes (third to seventh)
+	 * are set to the integer value of the index that the {@link oughttoprevail.asyncnetwork.IServerClient} is located in
 	 * the {@link IndexedList}.
 	 *
 	 * @param handle the completion port handle value
@@ -271,7 +273,7 @@ public class WindowsSelectorImpl implements WindowsSelector
 	 * @param handle the completion port handle
 	 * @param serverSocket the server socket that the new client socket will be accepted from.
 	 * @param index the index that will be saved as extra data (completion key) when registering
-	 * @param threads the {@link oughttoprevail.asyncnetwork.Server} threads count that will be setValue
+	 * @param threads the {@link oughttoprevail.asyncnetwork.Server} threads count that will be set
 	 * @param bufferAddress the buffer address in which the new socket addresses will go
 	 * @return the new accepted client socket.
 	 */

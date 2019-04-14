@@ -30,9 +30,9 @@ import oughttoprevail.asyncnetwork.impl.util.writer.server.PendingWrite;
 public interface WindowsSelector extends Closeable
 {
 	/**
-	 * Creates a new selector that will transfer calls into C++ and increase performance for Windows.
+	 * Creates a new selector that will transfer invocations into C++ and increase performance for Windows.
 	 *
-	 * @return a new selector that will transfer calls into C++ and increase performance for Windows
+	 * @return a new selector that will transfer invocations into C++ and increase performance for Windows
 	 */
 	static WindowsSelector newWindowsSelector()
 	{
@@ -99,7 +99,7 @@ public interface WindowsSelector extends Closeable
 	 *
 	 * @param serverSocket the server socket that the new client socket will be accepted from.
 	 * @param index the index that will be saved as extra data (completion key) when registering
-	 * @param threads the {@link oughttoprevail.asyncnetwork.Server} threads count that will be setValue
+	 * @param threads the {@link oughttoprevail.asyncnetwork.Server} threads count that will be set
 	 * @return the new accepted client socket.
 	 */
 	int AcceptEx(int serverSocket, int index, int threads);

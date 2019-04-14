@@ -33,6 +33,7 @@ import oughttoprevail.asyncnetwork.IServerClient;
 import oughttoprevail.asyncnetwork.SelectorImplementation;
 import oughttoprevail.asyncnetwork.exceptions.SelectException;
 import oughttoprevail.asyncnetwork.impl.Util;
+import oughttoprevail.asyncnetwork.impl.packet.ByteBufferElement;
 import oughttoprevail.asyncnetwork.impl.packet.ByteBufferPool;
 import oughttoprevail.asyncnetwork.impl.util.StatedCount;
 import oughttoprevail.asyncnetwork.impl.util.Validator;
@@ -96,7 +97,7 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 	 * Creates a new selector which will be closed when the server is closed.
 	 * The selector must be either {@link LinuxMacSelector} or {@link WindowsSelector} or {@link Selector} or a exception will be thrown.
 	 * <p>
-	 * if {@link OS#LINUX} and {@link OS#MAC} aren't {@code true} it will be setValue to null
+	 * if {@link OS#LINUX} and {@link OS#MAC} aren't {@code true} it will be set to null
 	 *
 	 * @return the new closeable selector
 	 */
@@ -218,7 +219,7 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 							selectorFlags.call(index, flags, null);
 						} else
 						{
-							count.setValue(selected);
+							count.set(selected);
 							for(int i = 0; i < selected; i++)
 							{
 								int index = buffer.get();
@@ -280,15 +281,15 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 			{
 				ThreadCreator.newThread("WindowsSelector (" + i + ")", () ->
 				{
-					ByteBuffer result = ByteBufferPool.getInstance().take(/*opcode*/Util.BYTE_BYTES + /*client index*/Util.INT_BYTES + /*is read*/Util.BYTE_BYTES + /*the received bytes*/Util.INT_BYTES);
+					ByteBufferElement resultElement = ByteBufferPool.getInstance().take(/*opcode*/Util.BYTE_BYTES + /*client index*/Util.INT_BYTES + /*is read*/Util.BYTE_BYTES + /*the received bytes*/Util.INT_BYTES);
+					ByteBuffer result = resultElement.getByteBuffer();
 					result.order(ByteOrder.nativeOrder());
-					long address = Util.address(result);
 					int selectTimeout = getSelectTimeout();
 					while(!isClosed())
 					{
 						try
 						{
-							Object finishedWrite = selector.select(selectTimeout, address);
+							Object finishedWrite = selector.select(selectTimeout, resultElement.address());
 							flags.run(result, finishedWrite);
 						} catch(SelectException e)
 						{
@@ -310,6 +311,8 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 							result.clear();
 						}
 					}
+					flags.close();
+					ByteBufferPool.getInstance().give(resultElement);
 				});
 			}
 			flags.AcceptEx();
@@ -357,7 +360,7 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 							boolean changeThreads = selected != 1;
 							if(changeThreads)
 							{
-								count.setValue(selected);
+								count.set(selected);
 							}
 							Iterator<SelectionKey> iterator = javaSelector.selectedKeys().iterator();
 							while(iterator.hasNext())

@@ -21,7 +21,7 @@ public class ConditionWaiterImpl extends StatedCount implements ConditionWaiter
 {
 	public ConditionWaiterImpl()
 	{
-		setValue(1);
+		set(1);
 	}
 	
 	/**
@@ -39,6 +39,6 @@ public class ConditionWaiterImpl extends StatedCount implements ConditionWaiter
 	@Override
 	public void reset()
 	{
-		setValue(1);
+		set(1);
 	}
 }

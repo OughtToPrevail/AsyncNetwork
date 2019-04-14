@@ -26,14 +26,20 @@ import oughttoprevail.asyncnetwork.util.Consumer;
 public class PacketImpl implements Packet
 {
 	/**
+	 * The {@link ByteBufferElement} the {@link #packetBuffer} is taken from.
+	 * This will be given back to the {@link ByteBufferPool} when the packet has closed.
+	 */
+	private ByteBufferElement packetBufferElement;
+	/**
 	 * The {@link ByteBuffer} used for writing operations.
 	 * This will be {@code null} if the {@link Packet} has closed.
 	 */
 	private ByteBuffer packetBuffer;
 	
-	public PacketImpl(ByteBuffer packetBuffer)
+	protected PacketImpl(ByteBufferElement packetBufferElement)
 	{
-		this.packetBuffer = packetBuffer;
+		this.packetBufferElement = packetBufferElement;
+		this.packetBuffer = packetBufferElement.getByteBuffer();
 	}
 	
 	private void ensureNotClosed()
@@ -76,7 +82,7 @@ public class PacketImpl implements Packet
 	 *
 	 * @param channel for the packet to be written to
 	 * @param onWriteFinished the runnable that will be called when write operation has successfully
-	 * finished (nullable) NOTE: onWriteFinished should be setValue to null when using
+	 * finished (nullable) NOTE: onWriteFinished should be set to null when using
 	 * {@link Client} to prevent {@link StackOverflowError}
 	 * @return this
 	 */
@@ -107,7 +113,7 @@ public class PacketImpl implements Packet
 	 *
 	 * @param channel for the packet to be written to
 	 * @param onWriteFinished the runnable that will be called when write operation has successfully
-	 * finished (nullable) NOTE: onWriteFinished should be setValue to null when using
+	 * finished (nullable) NOTE: onWriteFinished should be set to null when using
 	 * {@link Client} to prevent {@link StackOverflowError}
 	 */
 	@Override
@@ -134,7 +140,7 @@ public class PacketImpl implements Packet
 	@Override
 	public void close()
 	{
-		ByteBufferPool.getInstance().give(packetBuffer);
+		ByteBufferPool.getInstance().give(packetBufferElement);
 		packetBuffer = null;
 	}
 	

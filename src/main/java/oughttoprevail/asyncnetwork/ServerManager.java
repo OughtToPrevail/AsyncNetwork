@@ -18,15 +18,13 @@ package oughttoprevail.asyncnetwork;
 import oughttoprevail.asyncnetwork.util.Consumer;
 import oughttoprevail.asyncnetwork.util.IndexedList;
 
-;
-
 /**
  * Implementation at {@link oughttoprevail.asyncnetwork.impl.server.ServerClientManagerImpl}.
  */
 public interface ServerManager
 {
 	/**
-	 * Closes the channel and calls {@link Channel#onDisconnect(Consumer)} specified consumer with the
+	 * Closes the channel and invokes {@link Channel#onDisconnect(Consumer)} specified consumer with the
 	 * specified disconnectionType.
 	 *
 	 * @param disconnectionType the disconnectionType that will be used when calling the {@link
@@ -35,7 +33,7 @@ public interface ServerManager
 	void close(DisconnectionType disconnectionType);
 	
 	/**
-	 * Calls the channel's {@link Channel#onException(Consumer)} consumer with the specified
+	 * Invokes the channel's {@link Channel#onException(Consumer)} consumer with the specified
 	 * exception.
 	 *
 	 * @param throwable the exception that the channel's {@link Channel#onException(Consumer)}

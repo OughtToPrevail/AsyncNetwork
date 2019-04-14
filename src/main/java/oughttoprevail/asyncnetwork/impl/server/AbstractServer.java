@@ -39,8 +39,6 @@ import oughttoprevail.asyncnetwork.util.LinuxMacSelector;
 import oughttoprevail.asyncnetwork.util.OS;
 import oughttoprevail.asyncnetwork.util.WindowsSelector;
 
-;
-
 public abstract class AbstractServer<T extends IServer, S extends IServerClient> implements IServer<T, S>
 {
 	/**
@@ -75,7 +73,7 @@ public abstract class AbstractServer<T extends IServer, S extends IServerClient>
 	private final int threadsCount;
 	
 	/**
-	 * The manager of this {@link AbstractServer}, it will handle sensitive calls.
+	 * The manager of this {@link AbstractServer}, it will give access to more sensitive data.
 	 */
 	private final ServerManager manager;
 	
@@ -191,7 +189,7 @@ public abstract class AbstractServer<T extends IServer, S extends IServerClient>
 	private boolean binded;
 	
 	/**
-	 * Calls {@link ServerSocketChannel#bind(SocketAddress)} with the specified address.
+	 * Invokes {@link ServerSocketChannel#bind(SocketAddress)} with the specified address.
 	 *
 	 * @param address the address that will be used when calling {@link
 	 * ServerSocketChannel#bind(SocketAddress)}
@@ -204,7 +202,7 @@ public abstract class AbstractServer<T extends IServer, S extends IServerClient>
 	}
 	
 	/**
-	 * Calls {@link ServerSocketChannel#bind(SocketAddress, int)} with the specified address and
+	 * Invokes {@link ServerSocketChannel#bind(SocketAddress, int)} with the specified address and
 	 * specified backlog.
 	 *
 	 * @param address the address that will be used when calling {@link
@@ -220,7 +218,7 @@ public abstract class AbstractServer<T extends IServer, S extends IServerClient>
 		try
 		{
 			if(onConnection == null)
-				throw new IllegalArgumentException("On connection has not been setValue!");
+				throw new IllegalArgumentException("On connection has not been set!");
 			if(OS.ANDROID)
 			{
 				channel.socket().bind(address, backlog);
@@ -288,7 +286,7 @@ public abstract class AbstractServer<T extends IServer, S extends IServerClient>
 	private Consumer<T> onBind;
 	
 	/**
-	 * Calls the specified runnable when the T has successfully binded.
+	 * Invokes the specified runnable when the T has successfully binded.
 	 *
 	 * @param onBind the runnable that will be called when the T has successfully binded
 	 * @return this
@@ -300,7 +298,7 @@ public abstract class AbstractServer<T extends IServer, S extends IServerClient>
 	}
 	
 	/**
-	 * Calls the specified consumer with this T when the T has successfully binded.
+	 * Invokes the specified consumer with this T when the T has successfully binded.
 	 *
 	 * @param onBind the consumer that will be called when the T has successfully binded
 	 * @return this
@@ -357,7 +355,7 @@ public abstract class AbstractServer<T extends IServer, S extends IServerClient>
 	 * Creates a new selector which will be closed when the server is closed.
 	 * The selector must be either {@link LinuxMacSelector} or {@link WindowsSelector} or {@link java.nio.channels.Selector} or a exception will be thrown.
 	 * <p>
-	 * if {@link OS#LINUX} and {@link OS#MAC} aren't {@code true} it will be setValue to null
+	 * if {@link OS#LINUX} and {@link OS#MAC} aren't {@code true} it will be set to null
 	 *
 	 * @return the new closeable selector
 	 */
@@ -389,7 +387,7 @@ public abstract class AbstractServer<T extends IServer, S extends IServerClient>
 	private Consumer<S> onConnection;
 	
 	/**
-	 * Calls the specified consumer when a client has connected.
+	 * Invokes the specified consumer when a client has connected.
 	 *
 	 * @param onConnection the consumer that will be called when a client connects
 	 * @return this
@@ -398,13 +396,13 @@ public abstract class AbstractServer<T extends IServer, S extends IServerClient>
 	public T onConnection(Consumer<S> onConnection)
 	{
 		if(onConnection == null && binded)
-			throw new IllegalArgumentException("Cannot setValue onConnection to null after bind!");
+			throw new IllegalArgumentException("Cannot set onConnection to null after bind!");
 		this.onConnection = onConnection;
 		return getThis();
 	}
 	
 	/**
-	 * Calls the {@link #onConnection} {@link Consumer} with the specified client.
+	 * Invokes the {@link #onConnection} {@link Consumer} with the specified client.
 	 *
 	 * @param client to call the {@link #onConnection} with
 	 */
@@ -419,7 +417,7 @@ public abstract class AbstractServer<T extends IServer, S extends IServerClient>
 	private Consumer<Throwable> onException;
 	
 	/**
-	 * Calls the specified consumer with a throwable when a caught exception occurs.
+	 * Invokes the specified consumer with a throwable when a caught exception occurs.
 	 *
 	 * @param onException the consumer that will be called with the caught exceptions
 	 * @return this
@@ -518,7 +516,7 @@ public abstract class AbstractServer<T extends IServer, S extends IServerClient>
 	private Consumer<DisconnectionType> onClose;
 	
 	/**
-	 * Calls the specified consumer with a disconnectionType when the server is closed.
+	 * Invokes the specified consumer with a disconnectionType when the server is closed.
 	 *
 	 * @param onClose the consumer that will be called with the disconnectionType when the server is
 	 * closed
@@ -532,7 +530,7 @@ public abstract class AbstractServer<T extends IServer, S extends IServerClient>
 	}
 	
 	/**
-	 * If the T has yet to be closed the method closes the {@link ServerSocketChannel} and calls the
+	 * If the T has yet to be closed the method closes the {@link ServerSocketChannel} and invokes the
 	 * onDisconnect on all clients that is specified by {@link Channel#onDisconnect(Consumer)}.
 	 *
 	 * @return this

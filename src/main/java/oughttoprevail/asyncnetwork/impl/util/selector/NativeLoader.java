@@ -33,7 +33,7 @@ interface NativeLoader
 	static boolean load(String file, String extension)
 	{
 		//Append "/" and the model of this machine
-		file = "/" + file + OS.MODEL;
+		file = file + OS.MODEL;
 		String resource = "/" + file + extension;
 		try
 		{
@@ -53,12 +53,14 @@ interface NativeLoader
 				{
 					InputStream in = url.openStream();
 					String path;
+					//remove "/"
+					resource = resource.substring(1);
 					if(OS.ANDROID)
 					{
 						path = AndroidNativeLoader.copy(file, extension, resource, in);
 					} else
 					{
-						path = DesktopNativeLoader.create(file, extension, resource, in);
+						path = DesktopNativeLoader.copy(file, extension, resource, in);
 					}
 					in.close();
 					

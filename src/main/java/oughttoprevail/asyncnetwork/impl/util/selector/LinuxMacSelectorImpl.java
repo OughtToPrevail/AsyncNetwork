@@ -56,11 +56,11 @@ public class LinuxMacSelectorImpl implements LinuxMacSelector
 	
 	/**
 	 * Creates a file descriptor for the selector and registers the server for accept connections
-	 * using the specified serverFd and also creates an array for the select calls.
+	 * using the specified serverFd and also creates an array for the select invocations.
 	 *
 	 * @param serverFd the file descriptor that will be used when registering the server for accept
 	 * connections
-	 * @param arraySize the arraySize that will be used for creating an array for select calls
+	 * @param arraySize the arraySize that will be used for creating an array for select invocations
 	 */
 	@Override
 	public void createSelector(int serverFd, int arraySize) throws IOException
@@ -91,7 +91,7 @@ public class LinuxMacSelectorImpl implements LinuxMacSelector
 	 * @param arraySize the array size that the {@link LinuxMacSelector} will use when reading the
 	 * {@link LinuxMacSelector} array
 	 * @param timeout the timeout that will be used for the select call
-	 * @return the amount of indexes setValue to the {@link IndexesBuffer} or -1 if an error occurred
+	 * @return the amount of indexes set to the {@link IndexesBuffer} or -1 if an error occurred
 	 */
 	@Override
 	public int select(long indexesAddress, int arraySize, int timeout) throws IOException

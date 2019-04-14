@@ -3,7 +3,7 @@
 
 ## Features
 
-* Cross platform
+* Cross platform (Windows, Linux, Mac, Android etc...)
 * Asynchronous
 * Can handle lots of clients at once
 * Easy-to-use
@@ -14,7 +14,7 @@
 <dependency>
     <groupId>com.github.oughttoprevail</groupId>
     <artifactId>AsyncNetwork</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 Here is <a href="https://search.maven.org/classic/#artifactdetails%7Ccom.github.oughttoprevail%7CAsyncNetwork%7C1.0.0%7Cjar">The Central Repository</a>.
@@ -70,7 +70,7 @@ Test 2: 117 MB/s
 ## Server selector
 ### Windows
 Windows uses <a href="https://docs.microsoft.com/en-us/windows/desktop/fileio/i-o-completion-ports">IO completion ports</a> for best asynchronous performance.
-### Linux
+### Linux (Android is based on Linux)
 Linux has <a href="http://man7.org/linux/man-pages/man7/epoll.7.html">sys/epoll</a> which is famous for it's O(1) `epoll_wait` performance.
 ### Mac
 Mac has FreeBSD features including <a href="https://www.freebsd.org/cgi/man.cgi?query=kqueue&sektion=2">kqueue</a> which is also O(1).

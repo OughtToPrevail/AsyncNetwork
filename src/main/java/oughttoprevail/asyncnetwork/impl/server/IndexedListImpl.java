@@ -105,9 +105,9 @@ public class IndexedListImpl<T> implements IndexedList<T>
 	}
 	
 	/**
-	 * Returns an unmodifiable list of the clients
+	 * Returns an unmodifiable list of the values
 	 *
-	 * @return an unmodifiable list of the clients
+	 * @return an unmodifiable list of the values
 	 */
 	@Override
 	public List<T> list()

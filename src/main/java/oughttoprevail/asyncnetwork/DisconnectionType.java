@@ -19,15 +19,13 @@ import java.io.IOException;
 
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-;
-
 /**
  * Defines the DisconnectionType options.
  */
 public enum DisconnectionType
 {
 	/**
-	 * The user close {@link DisconnectionType} is used when a user calls {@link Channel#close()}.
+	 * The user close {@link DisconnectionType} is used when a user invokes {@link Channel#close()}.
 	 */
 	USER_CLOSE,
 	/**

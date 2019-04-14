@@ -19,7 +19,7 @@ import java.io.IOException;
 
 /**
  * Thrown when the {@link oughttoprevail.asyncnetwork.util.WindowsSelector#select(int, long)} has failed
- * GetQueuedCompletionStatus with overlapped setValue (not null).
+ * GetQueuedCompletionStatus with overlapped set (not null).
  */
 public class SelectException extends IOException
 {
@@ -27,7 +27,7 @@ public class SelectException extends IOException
 	
 	/**
 	 * Constructs an {@link SelectException} which is thrown when {@link oughttoprevail.asyncnetwork.util.WindowsSelector#select(int, long)}
-	 * has failed GetQueuedCompletionStatus with overlapped setValue (not null).
+	 * has failed GetQueuedCompletionStatus with overlapped set (not null).
 	 *
 	 * @param message the explanation of the exception
 	 * @param index the index of the channel with the error

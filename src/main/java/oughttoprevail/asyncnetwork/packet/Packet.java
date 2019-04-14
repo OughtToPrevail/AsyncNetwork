@@ -21,8 +21,6 @@ import oughttoprevail.asyncnetwork.Channel;
 import oughttoprevail.asyncnetwork.Client;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-;
-
 public interface Packet
 {
 	/**
@@ -47,7 +45,7 @@ public interface Packet
 	 *
 	 * @param channel for the packet to be written to
 	 * @param onWriteFinished the runnable that will be called when write operation has successfully
-	 * finished (nullable) NOTE: onWriteFinished should be setValue to null when using
+	 * finished (nullable) NOTE: onWriteFinished should be set to null when using
 	 * {@link Client} to prevent {@link StackOverflowError}
 	 * @return this
 	 */
@@ -67,7 +65,7 @@ public interface Packet
 	 *
 	 * @param channel for the packet to be written to
 	 * @param onWriteFinished the runnable that will be called when write operation has successfully
-	 * finished (nullable) NOTE: onWriteFinished should be setValue to null when using
+	 * finished (nullable) NOTE: onWriteFinished should be set to null when using
 	 * {@link Client} to prevent {@link StackOverflowError}
 	 */
 	void writeAndClose(Channel<?> channel, Consumer<ByteBuffer> onWriteFinished);

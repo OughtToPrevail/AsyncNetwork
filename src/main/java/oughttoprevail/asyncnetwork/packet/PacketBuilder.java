@@ -143,6 +143,16 @@ public interface PacketBuilder
 	<T> PacketBuilder putObject(T object, SerDes<T> serDes);
 	
 	/**
+	 * Puts the a boolean declaring whether the specified object is null
+	 * if it isn't null then specified object will be put in the packet after serialization made by specified serDes.
+	 *
+	 * @param object to put in the packet
+	 * @param serDes serializes the specified object
+	 * @return this
+	 */
+	<T> PacketBuilder putNullableObject(T object, SerDes<T> serDes);
+	
+	/**
 	 * Returns the total size in bytes of the packet.
 	 *
 	 * @return the total size in bytes of the packet

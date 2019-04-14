@@ -19,8 +19,6 @@ import java.net.SocketAddress;
 
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-;
-
 /**
  * Default implementation at {@link Client}.
  *
@@ -57,7 +55,7 @@ public interface IClient<T extends IClient> extends Channel<T>
 	T connectLocalHost(int port);
 	
 	/**
-	 * Calls the specified runnable when the channel's connect process has successfully finished.
+	 * Invokes the specified runnable when the channel's connect process has successfully finished.
 	 *
 	 * @param onConnect the runnable that will be called the channel's connect has successfully
 	 * finished
@@ -66,7 +64,7 @@ public interface IClient<T extends IClient> extends Channel<T>
 	T onConnect(Runnable onConnect);
 	
 	/**
-	 * Calls the specified consumer when the channel's connect process has successfully finished.
+	 * Invokes the specified consumer when the channel's connect process has successfully finished.
 	 *
 	 * @param onConnect the consumer that will be called the channel's connect has successfully
 	 * finished

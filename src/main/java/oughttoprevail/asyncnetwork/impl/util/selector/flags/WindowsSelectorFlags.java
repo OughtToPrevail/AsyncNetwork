@@ -30,12 +30,14 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import oughttoprevail.asyncnetwork.DisconnectionType;
 import oughttoprevail.asyncnetwork.IServer;
 import oughttoprevail.asyncnetwork.IServerClient;
 import oughttoprevail.asyncnetwork.impl.Util;
+import oughttoprevail.asyncnetwork.impl.packet.ByteBufferElement;
 import oughttoprevail.asyncnetwork.impl.packet.ByteBufferPool;
 import oughttoprevail.asyncnetwork.impl.util.UnsafeGetter;
 import oughttoprevail.asyncnetwork.impl.util.Validator;
@@ -61,6 +63,7 @@ public abstract class WindowsSelectorFlags<S extends IServerClient>
 	private final long remoteAddress;
 	private final long state;
 	
+	private final ByteBufferElement socketAddressesElement;
 	private final ByteBuffer socketAddresses;
 	private final long socketAddressesAddress;
 	
@@ -83,7 +86,9 @@ public abstract class WindowsSelectorFlags<S extends IServerClient>
 		localAddress = findOffset(socketChannelImpl, "localAddress");
 		remoteAddress = findOffset(socketChannelImpl, "remoteAddress");
 		state = findOffset(socketChannelImpl, "state");
-		socketAddresses = ByteBufferPool.getInstance().take(Byte.BYTES * 2 + Short.BYTES * 2 + Math.max(INET4_BYTES, INET6_BYTES) * 2);
+		socketAddressesElement = ByteBufferPool.getInstance()
+				.take(Byte.BYTES * 2 + Short.BYTES * 2 + Math.max(INET4_BYTES, INET6_BYTES) * 2);
+		socketAddresses = socketAddressesElement.getByteBuffer();
 		socketAddresses.order(ByteOrder.nativeOrder());
 		socketAddressesAddress = Util.address(socketAddresses);
 	}
@@ -105,16 +110,6 @@ public abstract class WindowsSelectorFlags<S extends IServerClient>
 		}
 	}
 	
-	private short getFirstShort(int info)
-	{
-		return (short) (info >> 16);
-	}
-	
-	private short getSecondShort(int info)
-	{
-		return (short) info;
-	}
-	
 	private static final int READ_OR_WRITE = 1;
 	private static final int ACCEPT = 2;
 	
@@ -129,16 +124,15 @@ public abstract class WindowsSelectorFlags<S extends IServerClient>
 			{
 				byte isRead = result.get();
 				int totalBytes = result.getInt();
-				System.out.println("TOTALBYTEs " + totalBytes);
 				if(totalBytes == 0 || totalBytes == -1)
 				{
-					System.out.println("Close");
 					client.manager().close(DisconnectionType.REMOTE_CLOSE);
 					return;
 				}
 				if(isRead == 1)
 				{
-					ByteBuffer readBuffer = client.manager().getReadBuffer();
+					ByteBufferElement readBufferElement = client.manager().getReadBuffer();
+					ByteBuffer readBuffer = readBufferElement.getByteBuffer();
 					readBuffer.position(readBuffer.position() + totalBytes);
 					client.manager().callRequests();
 					if(!client.isClosed())
@@ -152,7 +146,7 @@ public abstract class WindowsSelectorFlags<S extends IServerClient>
 						try
 						{
 							selector.WSARecv(client.manager().getFD(),
-									Util.address(readBuffer) + position,
+									readBufferElement.address(),
 									readBuffer.capacity() - position);
 						} catch(IOException e)
 						{
@@ -198,14 +192,11 @@ public abstract class WindowsSelectorFlags<S extends IServerClient>
 									socketAddresses.clear();
 									AcceptEx();
 									client.manager().setFD(socket);
-									ByteBuffer readBuffer = client.manager().getReadBuffer();
+									ByteBufferElement readBuffer = client.manager().getReadBuffer();
+									selector.WSARecv(socket,
+											readBuffer.address(),
+											readBuffer.getByteBuffer().capacity());
 									connected(client);
-									if(!client.isClosed())
-									{
-										selector.WSARecv(socket,
-												Util.address(readBuffer),
-												readBuffer.capacity());
-									}
 									return;
 								}
 							}
@@ -221,11 +212,23 @@ public abstract class WindowsSelectorFlags<S extends IServerClient>
 		}
 	}
 	
+	private final AtomicBoolean closed = new AtomicBoolean();
+	
+	public void close()
+	{
+		synchronized(closed)
+		{
+			if(closed.compareAndSet(false, true))
+			{
+				ByteBufferPool.getInstance().give(socketAddressesElement);
+			}
+		}
+	}
+	
 	private InetSocketAddress getSocketAddress()
 	{
 		byte ipv6 = socketAddresses.get();
-		System.out.println("IPV " + ipv6);
-		int port = Short.toUnsignedInt(socketAddresses.getShort());
+		int port = Util.toUnsignedInt(socketAddresses.getShort());
 		int length;
 		if(ipv6 == 1)
 		{
@@ -241,7 +244,6 @@ public abstract class WindowsSelectorFlags<S extends IServerClient>
 		}
 		byte[] data = new byte[length];
 		socketAddresses.get(data);
-		System.out.println("PORT " + port);
 		try
 		{
 			return new InetSocketAddress(InetAddress.getByAddress(data), port);

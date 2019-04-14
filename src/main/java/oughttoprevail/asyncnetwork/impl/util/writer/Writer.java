@@ -20,8 +20,6 @@ import java.nio.ByteBuffer;
 import oughttoprevail.asyncnetwork.Channel;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-;
-
 /**
  * Implementations at {@link oughttoprevail.asyncnetwork.impl.util.writer.server.ServerWriter}, {@link oughttoprevail.asyncnetwork.impl.util.writer.server.WindowsWriter}, {@link oughttoprevail.asyncnetwork.impl.util.writer.client.ClientWriter}
  */
@@ -31,9 +29,9 @@ public interface Writer<T extends Channel>
 	 * Writes the specified writeBuffer into the specified channel.
 	 * Once a write has finished the specified onWriteFinished is invoked with the specified writeBuffer.
 	 *
-	 * @param channel the channel that the specified writeBuffer will be written to
-	 * @param writeBuffer the {@link ByteBuffer} that will be written into the channel
-	 * @param onWriteFinished the {@link Runnable} to be called when the write has finished
+	 * @param channel which will write the specified writeBuffer
+	 * @param writeBuffer to write into the specified channel
+	 * @param onWriteFinished which will be invoked when the write has finished
 	 */
 	void write(T channel, ByteBuffer writeBuffer, Consumer<ByteBuffer> onWriteFinished);
 	

@@ -32,8 +32,6 @@ import oughttoprevail.asyncnetwork.impl.util.writer.client.ClientWriter;
 import oughttoprevail.asyncnetwork.util.Consumer;
 import oughttoprevail.asyncnetwork.util.ThreadCreator;
 
-;
-
 public class ClientImpl extends ChannelImpl<Client> implements Client
 {
 	/**
@@ -52,7 +50,7 @@ public class ClientImpl extends ChannelImpl<Client> implements Client
 	 */
 	private final SocketChannel channel;
 	/**
-	 * The manager of this {@link Client}, it will handle sensitive calls.
+	 * The manager of this {@link Client}, it will give access to more sensitive data.
 	 */
 	private ClientManager manager;
 	
@@ -120,13 +118,6 @@ public class ClientImpl extends ChannelImpl<Client> implements Client
 		try
 		{
 			channel.connect(address);
-			connected = true;
-			if(onConnect != null)
-			{
-				onConnect.accept(this);
-				//set to null since no more than one connection can occur per client.
-				onConnect = null;
-			}
 			ThreadCreator.newThread(CLIENT_THREAD_NAME, () ->
 			{
 				while(!isClosed())
@@ -134,6 +125,13 @@ public class ClientImpl extends ChannelImpl<Client> implements Client
 					manager().callRead();
 				}
 			});
+			connected = true;
+			if(onConnect != null)
+			{
+				onConnect.accept(this);
+				//set to null since no more than one connection can occur per client.
+				onConnect = null;
+			}
 		} catch(IOException e)
 		{
 			Validator.exceptionClose(this, e);
@@ -177,7 +175,7 @@ public class ClientImpl extends ChannelImpl<Client> implements Client
 	private Consumer<Client> onConnect;
 	
 	/**
-	 * Calls the specified runnable when the channel's connect process has successfully finished.
+	 * Invokes the specified runnable when the channel's connect process has successfully finished.
 	 *
 	 * @param onConnect the runnable that will be called the channel's connect has successfully
 	 * finished
@@ -190,7 +188,7 @@ public class ClientImpl extends ChannelImpl<Client> implements Client
 	}
 	
 	/**
-	 * Calls the specified consumer when the channel's connect process has successfully finished.
+	 * Invokes the specified consumer when the channel's connect process has successfully finished.
 	 *
 	 * @param onConnect the consumer that will be called the channel's connect has successfully
 	 * finished

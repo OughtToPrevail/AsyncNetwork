@@ -47,13 +47,13 @@ public interface ServerClientManager<S extends IServer> extends ChannelManager
 	int getFD();
 	
 	/**
-	 * Calls pending read requests with the remaining in the channel's read {@link
+	 * Invokes pending read requests with the remaining in the channel's read {@link
 	 * ByteBuffer}.
 	 */
 	void callRequests();
 	
 	/**
-	 * Reads from the socket into the channel's read {@link ByteBuffer} then calls the
+	 * Reads from the socket into the channel's read {@link ByteBuffer} then invokes the
 	 * pending read requests.
 	 */
 	void callRead();
@@ -71,14 +71,14 @@ public interface ServerClientManager<S extends IServer> extends ChannelManager
 	/**
 	 * Sets the {@link SelectionKey} of {@code selectionKey} to the specified {@code selectionKey}.
 	 *
-	 * @param selectionKey the value that {@code selectionKey} will be setValue to
+	 * @param selectionKey the value that {@code selectionKey} will be set to
 	 */
 	void setSelectionKey(SelectionKey selectionKey);
 	
 	/**
-	 * Returns the channel's selection key or null if it was never setValue.
+	 * Returns the channel's selection key or null if it was never set.
 	 *
-	 * @return the channel's selection key or null if it was never setValue
+	 * @return the channel's selection key or null if it was never set
 	 */
 	SelectionKey getSelectionKey();
 }

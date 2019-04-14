@@ -31,35 +31,28 @@ import oughttoprevail.asyncnetwork.impl.util.Validator;
 import oughttoprevail.asyncnetwork.impl.util.writer.Writer;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-;
-
 public class ServerWriter implements Writer<ServerClient>
 {
 	private final Deque<ServerPendingWrite> pendingWrites = new ArrayDeque<>();
 	private final AtomicBoolean exceptingNotification = new AtomicBoolean();
 	private CountDownLatch notifiable;
 	
-	/**
-	 * Writes the specified writeBuffer into the specified channel.
-	 * Once a write has finished the specified onWriteFinished is invoked with the specified writeBuffer.
-	 *
-	 * @param channel the channel that the specified writeBuffer will be written to
-	 * @param writeBuffer the {@link ByteBuffer} that will be written into the channel
-	 * @param onWriteFinished the {@link Runnable} to be called when the write has finished
-	 */
-	@Override
-	public void write(ServerClient channel, ByteBuffer writeBuffer, Consumer<ByteBuffer> onWriteFinished)
+	private void write(ServerClient channel, ByteBuffer writeBuffer, Consumer<ByteBuffer> onWriteFinished, boolean continueWriting)
 	{
-		synchronized(pendingWrites)
+		if(!continueWriting)
 		{
-			if(exceptingNotification.get())
+			synchronized(pendingWrites)
 			{
-				return;
-			}
-			if(!pendingWrites.isEmpty())
-			{
-				pendingWrites.offerLast(new ServerPendingWrite(channel, writeBuffer, onWriteFinished));
-				return;
+				if(exceptingNotification.get())
+				{
+					//stop writing, the writer has been closed
+					return;
+				}
+				if(!pendingWrites.isEmpty())
+				{
+					pendingWrites.offerLast(new ServerPendingWrite(channel, writeBuffer, onWriteFinished));
+					return;
+				}
 			}
 		}
 		try
@@ -92,12 +85,25 @@ public class ServerWriter implements Writer<ServerClient>
 			}
 			synchronized(pendingWrites)
 			{
-			pendingWrites.offerLast(new ServerPendingWrite(channel, writeBuffer, onWriteFinished));
-		}
+				pendingWrites.offerLast(new ServerPendingWrite(channel, writeBuffer, onWriteFinished));
+			}
 		} catch(IOException e)
 		{
 			Validator.handleRemoteHostCloseException(e, channel);
 		}
+	}
+	/**
+	 * Writes the specified writeBuffer into the specified channel.
+	 * Once a write has finished the specified onWriteFinished is invoked with the specified writeBuffer.
+	 *
+	 * @param channel which will write the specified writeBuffer
+	 * @param writeBuffer to write into the specified channel
+	 * @param onWriteFinished which will be invoked when the write has finished
+	 */
+	@Override
+	public void write(ServerClient channel, ByteBuffer writeBuffer, Consumer<ByteBuffer> onWriteFinished)
+	{
+		write(channel, writeBuffer, onWriteFinished, false);
 	}
 	
 	/**
@@ -114,7 +120,7 @@ public class ServerWriter implements Writer<ServerClient>
 			while((pendingWrite = pendingWrites.pollFirst()) != null)
 			{
 				int currentSize = pendingWrites.size();
-				write(pendingWrite.client, pendingWrite.getWriteBuffer(), pendingWrite.getOnWriteFinished());
+				write(pendingWrite.client, pendingWrite.getWriteBuffer(), pendingWrite.getOnWriteFinished(), true);
 				boolean changed = pendingWrites.size() == currentSize;
 				if(changed)
 				{
@@ -132,7 +138,27 @@ public class ServerWriter implements Writer<ServerClient>
 	@Override
 	public void close()
 	{
-	
+		//make sure you don't wait inside the {@code synchronized}
+		boolean needWaiting = false;
+		synchronized(pendingWrites)
+		{
+			if(!pendingWrites.isEmpty())
+			{
+				needWaiting = true;
+				notifiable = new CountDownLatch(pendingWrites.size());
+				exceptingNotification.set(true);
+			}
+		}
+		if(needWaiting)
+		{
+			try
+			{
+				notifiable.await();
+			} catch(InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	private static class ServerPendingWrite extends PendingWrite

@@ -29,9 +29,9 @@ public class SynchronizedPacketImpl extends PacketImpl
 	 */
 	private final Object lock = new Object();
 	
-	public SynchronizedPacketImpl(ByteBuffer packetBuffer)
+	protected SynchronizedPacketImpl(ByteBufferElement packetBufferElement)
 	{
-		super(packetBuffer);
+		super(packetBufferElement);
 	}
 	
 	/**
@@ -69,7 +69,7 @@ public class SynchronizedPacketImpl extends PacketImpl
 	 *
 	 * @param channel for the packet to be written to
 	 * @param onWriteFinished the runnable that will be called when write operation has successfully
-	 * finished (nullable) NOTE: onWriteFinished should be setValue to null when using
+	 * finished (nullable) NOTE: onWriteFinished should be set to null when using
 	 * {@link Client} to prevent {@link StackOverflowError}
 	 * @return this
 	 */

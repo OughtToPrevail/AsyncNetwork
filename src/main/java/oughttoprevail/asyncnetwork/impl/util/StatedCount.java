@@ -19,7 +19,7 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 /**
  * Copied from {@link java.util.concurrent.CountDownLatch}. Added method {@link
- * StatedCount#setValue(int)}.
+ * StatedCount#set(int)}.
  */
 public class StatedCount
 {
@@ -46,7 +46,7 @@ public class StatedCount
 			}
 		}
 		
-		private void setValue(int value)
+		private void set(int value)
 		{
 			setState(value);
 		}
@@ -84,10 +84,10 @@ public class StatedCount
 	/**
 	 * Sets the value of the count down.
 	 *
-	 * @param value the value that will be setValue for the count down.
+	 * @param value the value that will be set for the count down.
 	 */
-	public void setValue(int value)
+	public void set(int value)
 	{
-		sync.setValue(value);
+		sync.set(value);
 	}
 }

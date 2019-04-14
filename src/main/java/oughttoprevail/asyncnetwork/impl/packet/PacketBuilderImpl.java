@@ -25,8 +25,6 @@ import oughttoprevail.asyncnetwork.packet.PacketBuilder;
 import oughttoprevail.asyncnetwork.packet.SerDes;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-;
-
 public class PacketBuilderImpl implements PacketBuilder
 {
 	/**
@@ -42,11 +40,6 @@ public class PacketBuilderImpl implements PacketBuilder
 	public PacketBuilderImpl()
 	{
 		instructions = new ArrayDeque<>();
-	}
-	
-	public PacketBuilderImpl(int exceptedInstructions)
-	{
-		instructions = new ArrayDeque<>(exceptedInstructions);
 	}
 	
 	/**
@@ -201,7 +194,8 @@ public class PacketBuilderImpl implements PacketBuilder
 	public PacketBuilder putString(String s)
 	{
 		byte[] bytes = s.getBytes(Util.UTF_8);
-		return putBytes(bytes);
+		short len = (short) bytes.length;
+		return putShort(len).putBytes(bytes);
 	}
 	
 	/**
@@ -230,6 +224,25 @@ public class PacketBuilderImpl implements PacketBuilder
 				serDes.serialize(object, byteBuffer);
 			}, serializedLength);
 		}
+	}
+	
+	/**
+	 * Puts the a boolean declaring whether the specified object is null
+	 * if it isn't null then specified object will be put in the packet after serialization made by specified serDes.
+	 *
+	 * @param object to put in the packet
+	 * @param serDes serializes the specified object
+	 * @return this
+	 */
+	@Override
+	public <T> PacketBuilder putNullableObject(T object, SerDes<T> serDes)
+	{
+		putBoolean(object != null);
+		if(object != null)
+		{
+			putObject(object, serDes);
+		}
+		return this;
 	}
 	
 	/**
@@ -267,13 +280,14 @@ public class PacketBuilderImpl implements PacketBuilder
 		return new SynchronizedPacketImpl(createByteBuffer());
 	}
 	
-	private ByteBuffer createByteBuffer()
+	private ByteBufferElement createByteBuffer()
 	{
-		ByteBuffer packetBuffer = ByteBufferPool.getInstance().take(size);
+		ByteBufferElement element = ByteBufferPool.getInstance().take(size);
+		ByteBuffer packetBuffer = element.getByteBuffer();
 		for(Consumer<ByteBuffer> instruction : instructions)
 		{
 			instruction.accept(packetBuffer);
 		}
-		return packetBuffer;
+		return element;
 	}
 }

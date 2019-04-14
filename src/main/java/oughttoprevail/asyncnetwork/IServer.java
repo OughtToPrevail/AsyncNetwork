@@ -21,8 +21,6 @@ import java.util.List;
 
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-;
-
 /**
  * Default implementation at {@link Server}.
  *
@@ -54,7 +52,7 @@ public interface IServer<T extends IServer, S extends IServerClient>
 	}
 	
 	/**
-	 * Calls {@link ServerSocketChannel#bind(SocketAddress)} with the specified address.
+	 * Invokes {@link ServerSocketChannel#bind(SocketAddress)} with the specified address.
 	 *
 	 * @param address the address that will be used when calling {@link
 	 * ServerSocketChannel#bind(SocketAddress)}
@@ -63,7 +61,7 @@ public interface IServer<T extends IServer, S extends IServerClient>
 	T bind(SocketAddress address);
 	
 	/**
-	 * Calls {@link ServerSocketChannel#bind(SocketAddress, int)} with the specified address and
+	 * Invokes {@link ServerSocketChannel#bind(SocketAddress, int)} with the specified address and
 	 * specified backlog.
 	 *
 	 * @param address the address that will be used when calling {@link
@@ -105,7 +103,7 @@ public interface IServer<T extends IServer, S extends IServerClient>
 	T bindLocalHost(int port);
 	
 	/**
-	 * Calls the specified runnable when the T has successfully binded.
+	 * Invokes the specified runnable when the T has successfully binded.
 	 *
 	 * @param onBind the runnable that will be called when the T has successfully binded
 	 * @return this
@@ -113,7 +111,7 @@ public interface IServer<T extends IServer, S extends IServerClient>
 	T onBind(Runnable onBind);
 	
 	/**
-	 * Calls the specified consumer with this T when the T has successfully binded.
+	 * Invokes the specified consumer with this T when the T has successfully binded.
 	 *
 	 * @param onBind the consumer that will be called when the T has successfully binded
 	 * @return this
@@ -121,7 +119,7 @@ public interface IServer<T extends IServer, S extends IServerClient>
 	T onBind(Consumer<T> onBind);
 	
 	/**
-	 * Calls the specified consumer when a client has connected.
+	 * Invokes the specified consumer when a client has connected.
 	 *
 	 * @param onConnection the consumer that will be called when a client connects
 	 * @return this
@@ -129,7 +127,7 @@ public interface IServer<T extends IServer, S extends IServerClient>
 	T onConnection(Consumer<S> onConnection);
 	
 	/**
-	 * Calls the specified consumer with a throwable when a caught exception occurs.
+	 * Invokes the specified consumer with a throwable when a caught exception occurs.
 	 *
 	 * @param onException the consumer that will be called with the caught exceptions
 	 * @return this
@@ -137,7 +135,7 @@ public interface IServer<T extends IServer, S extends IServerClient>
 	T onException(Consumer<Throwable> onException);
 	
 	/**
-	 * Calls the specified consumer with a disconnectionType when the server is closed.
+	 * Invokes the specified consumer with a disconnectionType when the server is closed.
 	 *
 	 * @param onClose the consumer that will be called with the disconnectionType when the server is
 	 * closed
@@ -161,6 +159,8 @@ public interface IServer<T extends IServer, S extends IServerClient>
 	
 	/**
 	 * Returns an unmodifiable list that contains the clients that have connected.
+	 * This list may contain null values for clients who have disconnected
+	 * reserved for future clients.
 	 *
 	 * @return an unmodifiable list that contains the clients that have connected
 	 */
@@ -202,7 +202,7 @@ public interface IServer<T extends IServer, S extends IServerClient>
 	SelectorImplementation getSelectorImplementation();
 	
 	/**
-	 * If the T has yet to be closed the method closes the {@link ServerSocketChannel} and calls the
+	 * If the T has yet to be closed the method closes the {@link ServerSocketChannel} and invokes the
 	 * onDisconnect on all clients that is specified by {@link Channel#onDisconnect(Consumer)}.
 	 *
 	 * @return this

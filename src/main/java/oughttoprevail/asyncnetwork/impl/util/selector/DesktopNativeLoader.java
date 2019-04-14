@@ -18,7 +18,7 @@ public interface DesktopNativeLoader
 	 */
 	Path TEMP_PATH = Paths.get(AccessController.doPrivileged(new GetPropertyAction("java.io.tmpdir")));
 	
-	static String create(String file, String extension, String resource, InputStream in)
+	static String copy(String file, String extension, String resource, InputStream in)
 	{
 		Path path = TEMP_PATH.resolve(resource);
 		int tries = 0;

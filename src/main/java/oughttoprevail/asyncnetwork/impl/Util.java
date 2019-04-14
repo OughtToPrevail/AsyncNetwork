@@ -38,13 +38,11 @@ public interface Util
 	
 	static void dispose(ByteBuffer byteBuffer)
 	{
-		System.out.println("DISPOSE");
 		CleanerAccess.cleanByteBuffer(byteBuffer);
 	}
 	
 	static long address(ByteBuffer byteBuffer)
 	{
-		System.out.println("ADDRESS");
 		return AddressReaderAccess.readByteBufferAddress(byteBuffer);
 	}
 	
@@ -57,5 +55,10 @@ public interface Util
 	static int getFD(AbstractSelectableChannel socketChannel)
 	{
 		return ((SelChImpl) socketChannel).getFDVal();
+	}
+	
+	static int toUnsignedInt(short value)
+	{
+		return ((int) value) & 0xFFFF;
 	}
 }

@@ -99,7 +99,7 @@ public class ByteBufferPool
 	 * @return a direct {@link ByteBuffer} from the queue if one
 	 * exists, if one doesn't exist a new {@link ByteBuffer} is created
 	 */
-	public ByteBuffer take(int size)
+	public ByteBufferElement take(int size)
 	{
 		synchronized(buffers)
 		{
@@ -110,7 +110,7 @@ public class ByteBufferPool
 			if(entry == null || entry.getKey() > size + RANGE)
 			{
 				buffers.put(size, new ArrayDeque<>(3));
-				return create(size);
+				return new ByteBufferElement(create(size));
 			}
 			
 			// Even though the entry isn't null, the deque that was found may not be. If it isn't, a ByteBuffer
@@ -132,7 +132,7 @@ public class ByteBufferPool
 					return prepare(byteBuffers.poll(), size);
 				}
 			}
-			return create(size);
+			return new ByteBufferElement(create(size));
 		}
 	}
 	
@@ -177,21 +177,22 @@ public class ByteBufferPool
 	 * @param size of the buffer requested in {@link #take(int)}
 	 * @return the specified byteBuffer after a few changes
 	 */
-	private ByteBuffer prepare(ByteBuffer byteBuffer, int size)
+	private ByteBufferElement prepare(ByteBuffer byteBuffer, int size)
 	{
 		byteBuffer.clear().limit(size);
-		return byteBuffer.slice();
+		return new ByteBufferElement(byteBuffer.slice(), byteBuffer);
 	}
 	
 	/**
-	 * Gives the specified byteBuffer to the queue.
+	 * Gives the specified element to the queue.
 	 *
-	 * @param byteBuffer to give to the queue
+	 * @param element to give to the queue
 	 */
-	public void give(ByteBuffer byteBuffer)
+	public void give(ByteBufferElement element)
 	{
 		synchronized(buffers)
 		{
+			ByteBuffer byteBuffer = element.getOriginal();
 			Deque<ByteBuffer> byteBuffers = buffers.get(byteBuffer.capacity());
 			if(byteBuffers == null)
 			{

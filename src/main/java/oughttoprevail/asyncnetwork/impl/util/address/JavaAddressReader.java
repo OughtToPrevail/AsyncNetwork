@@ -28,7 +28,6 @@ public class JavaAddressReader implements AddressReader
 		try
 		{
 			((DirectBuffer) ByteBuffer.allocateDirect(1)).address();
-			System.out.println("Supported");
 			SUPPORTED = true;
 		} catch(Throwable ignored)
 		{

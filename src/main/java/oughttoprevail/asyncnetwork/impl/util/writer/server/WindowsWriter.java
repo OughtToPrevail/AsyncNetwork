@@ -28,8 +28,6 @@ import oughttoprevail.asyncnetwork.impl.util.writer.Writer;
 import oughttoprevail.asyncnetwork.util.Consumer;
 import oughttoprevail.asyncnetwork.util.WindowsSelector;
 
-;
-
 public class WindowsWriter implements Writer<ServerClient>
 {
 	private final AtomicInteger pendingWrites = new AtomicInteger();
@@ -40,9 +38,9 @@ public class WindowsWriter implements Writer<ServerClient>
 	 * Writes the specified writeBuffer into the specified channel.
 	 * Once a write has finished the specified onWriteFinished is invoked with the specified writeBuffer.
 	 *
-	 * @param channel the channel that the specified writeBuffer will be written to
-	 * @param writeBuffer the {@link ByteBuffer} that will be written into the channel
-	 * @param onWriteFinished the {@link Runnable} to be called when the write has finished
+	 * @param channel which will write the specified writeBuffer
+	 * @param writeBuffer to write into the specified channel
+	 * @param onWriteFinished which will be invoked when the write has finished
 	 */
 	@Override
 	public void write(ServerClient channel, ByteBuffer writeBuffer, Consumer<ByteBuffer> onWriteFinished)
@@ -61,7 +59,7 @@ public class WindowsWriter implements Writer<ServerClient>
 				selector.WSASend(channel.manager().getFD(),
 						Util.address(writeBuffer) + writeBuffer.position(),
 						length,
-						new PendingWrite(writeBuffer, byteBuffer ->
+						new PendingWrite(writeBuffer, pendingWriteBuffer ->
 						{
 							synchronized(pendingWrites)
 							{
@@ -73,7 +71,10 @@ public class WindowsWriter implements Writer<ServerClient>
 									pendingWrites.getAndDecrement();
 								}
 							}
-							onWriteFinished.accept(byteBuffer);
+							if(onWriteFinished != null)
+							{
+								onWriteFinished.accept(pendingWriteBuffer);
+							}
 						}));
 			}
 		} catch(IOException e)

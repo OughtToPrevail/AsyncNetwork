@@ -28,11 +28,11 @@ import oughttoprevail.asyncnetwork.impl.util.selector.LinuxMacSelectorImpl;
 public interface LinuxMacSelector extends Closeable
 {
 	/**
-	 * Creates a new selector that will transfer calls into C++ and increase performance for Linux/Mac
+	 * Creates a new selector that will transfer invocations into C++ and increase performance for Linux/Mac
 	 * decided by {@link OS#LINUX} if true it will use Linux or if {@link OS#MAC} if true it will use
 	 * Mac.
 	 *
-	 * @return a new selector that will transfer calls into C++ and increase performance for Windows
+	 * @return a new selector that will transfer invocations into C++ and increase performance for Windows
 	 */
 	static LinuxMacSelector newSelector()
 	{
@@ -51,11 +51,11 @@ public interface LinuxMacSelector extends Closeable
 	
 	/**
 	 * Creates a file descriptor for the selector and registers the server for accept connections
-	 * using the specified serverFd and also creates an array for the select calls.
+	 * using the specified serverFd and also creates an array for the select invocations.
 	 *
 	 * @param serverFd the file descriptor that will be used when registering the server for accept
 	 * connections
-	 * @param arraySize the arraySize that will be used for creating an array for select calls
+	 * @param arraySize the arraySize that will be used for creating an array for select invocations
 	 * @throws IOException if the call had failed
 	 */
 	void createSelector(int serverFd, int arraySize) throws IOException;
@@ -77,7 +77,7 @@ public interface LinuxMacSelector extends Closeable
 	 * @param arraySize the array size that the {@link LinuxMacSelector} will use when reading the
 	 * {@link LinuxMacSelector} array
 	 * @param timeout the timeout that will be used for the select call
-	 * @return the amount of indexes setValue to the {@link IndexesBuffer} or -1 if an error occurred
+	 * @return the amount of indexes set to the {@link IndexesBuffer} or -1 if an error occurred
 	 * @throws IOException if the call had failed
 	 */
 	int select(long indexesAddress, int arraySize, int timeout) throws IOException;

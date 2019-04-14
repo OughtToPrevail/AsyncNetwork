@@ -17,9 +17,8 @@ package oughttoprevail.asyncnetwork;
 
 import java.nio.ByteBuffer;
 
+import oughttoprevail.asyncnetwork.impl.packet.ByteBufferElement;
 import oughttoprevail.asyncnetwork.util.Consumer;
-
-;
 
 /**
  * Implementations at {@link ServerClientManager} {@link ClientManager}.
@@ -27,9 +26,9 @@ import oughttoprevail.asyncnetwork.util.Consumer;
 public interface ChannelManager
 {
 	/**
-	 * Closes the channel and calls {@link Channel#onDisconnect(Consumer)} specified consumer with the
+	 * Closes the channel and invokes {@link Channel#onDisconnect(Consumer)} specified consumer with the
 	 * specified disconnectionType.
-	 * If specified urgent is setValue to true then pending write operations will not continue else
+	 * If specified urgent is set to true then pending write operations will not continue else
 	 * close call will block until write operations have finished.
 	 *
 	 * @param disconnectionType the disconnectionType that will be used when calling the {@link
@@ -42,10 +41,10 @@ public interface ChannelManager
 	 *
 	 * @return the channel's read buffer
 	 */
-	ByteBuffer getReadBuffer();
+	ByteBufferElement getReadBuffer();
 	
 	/**
-	 * Calls the channel's {@link Channel#onException(Consumer)} consumer with the specified
+	 * Invokes the channel's {@link Channel#onException(Consumer)} consumer with the specified
 	 * exception.
 	 *
 	 * @param throwable the exception that the channel's {@link Channel#onException(Consumer)}
@@ -54,7 +53,7 @@ public interface ChannelManager
 	void exception(Throwable throwable);
 	
 	/**
-	 * Calls the channel's {@link Channel#onBufferOverflow(Consumer)} consumer with the specified
+	 * Invokes the channel's {@link Channel#onBufferOverflow(Consumer)} consumer with the specified
 	 * byteBuffer.
 	 *
 	 * @param byteBuffer the {@link ByteBuffer} that the channel's {@link Channel#onBufferOverflow(Consumer)}
@@ -63,12 +62,12 @@ public interface ChannelManager
 	void bufferOverflow(ByteBuffer byteBuffer);
 	
 	/**
-	 * Reads pending channel reads with the readBuffer and calls the pending read consumers.
+	 * Reads pending channel reads with the readBuffer and invokes the pending read consumers.
 	 */
 	void callRead();
 	
 	/**
-	 * Calls the {@link Channel#onRead(Consumer)} consumer with the specified {@link ByteBuffer}.
+	 * Invokes the {@link Channel#onRead(Consumer)} consumer with the specified {@link ByteBuffer}.
 	 *
 	 * @param byteBuffer the {@link ByteBuffer} which will be used when calling the onRead conusmer
 	 */

@@ -27,7 +27,7 @@ import oughttoprevail.asyncnetwork.util.Consumer;
 public interface IServerClient<S extends IServer, T extends IServerClient> extends Channel<T>
 {
 	/**
-	 * Calls {@link Channel#write(ByteBuffer, Consumer)} and blocks until the write has successfully complete.
+	 * Invokes {@link Channel#write(ByteBuffer, Consumer)} and blocks until the write has successfully complete.
 	 *
 	 * @param writeBuffer to write in a blocking process
 	 * @param waiter the {@link ConditionWaiter} that will block until the write has successfully complete

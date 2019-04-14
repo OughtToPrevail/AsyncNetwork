@@ -30,8 +30,6 @@ import oughttoprevail.asyncnetwork.util.LinuxMacSelector;
 import oughttoprevail.asyncnetwork.util.OS;
 import oughttoprevail.asyncnetwork.util.SelectorFlags;
 
-;
-
 public abstract class SelectorFlagsImpl<S extends IServerClient> implements SelectorFlags
 {
 	private final AbstractServer<?, S> server;
@@ -55,7 +53,7 @@ public abstract class SelectorFlagsImpl<S extends IServerClient> implements Sele
 	 *
 	 * @param index the index of the channel who got selected or -5 if it was an accept call.
 	 * @param flags the flags of the select call.
-	 * @param count the count of how many calls have finished, if null it means that this is the only call for this select.
+	 * @param count the count of how many invocations have finished, if null it means that this is the only call for this select.
 	 */
 	@Override
 	public void call(int index, int flags, StatedCount count)

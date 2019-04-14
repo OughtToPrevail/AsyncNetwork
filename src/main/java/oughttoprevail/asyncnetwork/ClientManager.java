@@ -15,11 +15,6 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork;
 
-import oughttoprevail.asyncnetwork.impl.ChannelImpl;
-
-/**
- * Implementation at {@link ChannelImpl#createClientManager()}
- */
 public interface ClientManager extends ChannelManager
 {
 }

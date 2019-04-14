@@ -18,17 +18,19 @@ package oughttoprevail.asyncnetwork.impl.util;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import oughttoprevail.asyncnetwork.impl.Util;
+import oughttoprevail.asyncnetwork.impl.packet.ByteBufferElement;
 import oughttoprevail.asyncnetwork.impl.packet.ByteBufferPool;
 import oughttoprevail.asyncnetwork.util.IndexesBuffer;
 
 public class IndexesBufferImpl implements IndexesBuffer
 {
+	private final ByteBufferElement byteBufferElement;
 	private final ByteBuffer byteBuffer;
 	
 	public IndexesBufferImpl(int size)
 	{
-		byteBuffer = ByteBufferPool.getInstance().take(size);
+		this.byteBufferElement = ByteBufferPool.getInstance().take(size);
+		this.byteBuffer = byteBufferElement.getByteBuffer();
 		byteBuffer.order(ByteOrder.nativeOrder());
 	}
 	
@@ -60,7 +62,7 @@ public class IndexesBufferImpl implements IndexesBuffer
 	@Override
 	public long getAddress()
 	{
-		return Util.address(byteBuffer);
+		return byteBufferElement.address();
 	}
 	
 	/**
@@ -69,6 +71,6 @@ public class IndexesBufferImpl implements IndexesBuffer
 	@Override
 	public void close()
 	{
-		Util.dispose(byteBuffer);
+		ByteBufferPool.getInstance().give(byteBufferElement);
 	}
 }

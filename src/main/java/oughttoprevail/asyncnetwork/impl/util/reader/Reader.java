@@ -27,8 +27,6 @@ import oughttoprevail.asyncnetwork.DisconnectionType;
 import oughttoprevail.asyncnetwork.impl.util.Validator;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-;
-
 public class Reader
 {
 	private final Deque<Request> pendingRequests;
@@ -53,7 +51,6 @@ public class Reader
 			int read;
 			while((read = socketChannel.read(readBuffer)) != 0 && read != -1)
 			{
-				System.out.println("READ " + read);
 				callRequests(readBuffer);
 				readBuffer.limit(readBuffer.capacity());
 				if(readBuffer.position() == readBuffer.capacity())
@@ -74,7 +71,7 @@ public class Reader
 	private boolean callingRequests;
 	
 	/**
-	 * Calls the pending requests with the specified {@link ByteBuffer}.
+	 * Invokes the pending requests with the specified {@link ByteBuffer}.
 	 *
 	 * @param byteBuffer the {@link ByteBuffer} that will be used for calling the requests
 	 */
@@ -82,41 +79,28 @@ public class Reader
 	{
 		synchronized(pendingRequests)
 		{
-			if(callingRequests)
-			{
-				System.out.println("RETURN");
-				return;
-			}
-			callingRequests = true;
-			System.out.println("CALL REQUESTS");
 			channel.manager().callOnRead(byteBuffer);
 			if(pendingRequests.isEmpty() || byteBuffer.position() == 0)
 			{
-				System.out.println("RETURN1 " + byteBuffer.position() + " " + pendingRequests.isEmpty());
-				callingRequests = false;
 				return;
 			}
+			callingRequests = true;
 			byteBuffer.flip();
 			do
 			{
 				int leftInBuffer = byteBuffer.remaining();
-				System.out.println("LEFT " + leftInBuffer);
 				int requestLength = pendingRequests.peekFirst().getRequestLength();
-				System.out.println("REQUEST " + requestLength);
 				if(leftInBuffer < requestLength)
 				{
 					break;
 				}
 				Request request = pendingRequests.pollFirst();
-				System.out.println("BEFORE ACCEPT " + byteBuffer.remaining());
 				request.getRequest().accept(byteBuffer);
-				System.out.println("AFTER ACCEPT " + byteBuffer.remaining());
 				if(request.isAlways())
 				{
 					pendingRequests.offerLast(request);
 				}
 			} while(!pendingRequests.isEmpty());
-			System.out.println("IS EMPTY " + pendingRequests.isEmpty());
 			reset(byteBuffer);
 			callingRequests = false;
 		}
@@ -124,7 +108,6 @@ public class Reader
 	
 	private void reset(ByteBuffer byteBuffer)
 	{
-		System.out.println("RESET " + byteBuffer.position());
 		if(byteBuffer.hasRemaining())
 		{
 			byteBuffer.compact();
@@ -135,9 +118,9 @@ public class Reader
 	}
 	
 	/**
-	 * Calls {@link Queue#offer(Object)} with a new request
+	 * Invokes {@link Queue#offer(Object)} with a new request
 	 * created by {@link Request#Request(Consumer, int, boolean)}
-	 * then calls {@link #callRequests(ByteBuffer)} with te specified readBuffer.
+	 * then invokes {@link #callRequests(ByteBuffer)} with te specified readBuffer.
 	 *
 	 * @param readBuffer to call requests with
 	 * @param request the consumer that will be used when calling {@link Request#Request(Consumer, int, boolean)}
@@ -150,8 +133,30 @@ public class Reader
 	{
 		synchronized(pendingRequests)
 		{
+			if(pendingRequests.isEmpty())
+			{
+				if(!callingRequests)
+				{
+					readBuffer.flip();
+				}
+				int leftInBuffer = readBuffer.remaining();
+				if(leftInBuffer >= requestLength)
+				{
+					int limit = readBuffer.limit();
+					readBuffer.limit(readBuffer.position() + requestLength);
+					request.accept(readBuffer);
+					readBuffer.limit(limit);
+					if(!always)
+					{
+						return;
+					}
+				}
+				if(!callingRequests)
+				{
+					reset(readBuffer);
+				}
+			}
 			pendingRequests.offerLast(new Request(request, requestLength, always));
-			callRequests(readBuffer);
 		}
 	}
 	

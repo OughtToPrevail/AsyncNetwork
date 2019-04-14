@@ -26,17 +26,15 @@ import oughttoprevail.asyncnetwork.impl.util.Validator;
 import oughttoprevail.asyncnetwork.impl.util.writer.Writer;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-;
-
 public class ClientWriter implements Writer<Client>
 {
 	/**
 	 * Writes the specified writeBuffer into the specified channel.
 	 * Once a write has finished the specified onWriteFinished is invoked with the specified writeBuffer.
 	 *
-	 * @param channel the channel that the specified writeBuffer will be written to
-	 * @param writeBuffer the {@link ByteBuffer} that will be written into the channel
-	 * @param onWriteFinished the {@link Runnable} to be called when the write has finished
+	 * @param channel which will write the specified writeBuffer
+	 * @param writeBuffer to write into the specified channel
+	 * @param onWriteFinished which will be invoked when the write has finished
 	 */
 	@Override
 	public void write(Client channel, ByteBuffer writeBuffer, Consumer<ByteBuffer> onWriteFinished)
