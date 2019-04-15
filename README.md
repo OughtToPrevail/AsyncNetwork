@@ -17,7 +17,7 @@
     <version>1.0.1</version>
 </dependency>
 ```
-Here is <a href="https://search.maven.org/classic/#artifactdetails%7Ccom.github.oughttoprevail%7CAsyncNetwork%7C1.0.0%7Cjar">The Central Repository</a>.
+Here is <a href="https://search.maven.org/classic/#artifactdetails%7Ccom.github.oughttoprevail%7CAsyncNetwork%7C1.0.1%7Cjar">The Central Repository</a>.
 
 ## How to use
 To create a client you would do:
