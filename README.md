@@ -14,7 +14,7 @@
 <dependency>
     <groupId>com.github.oughttoprevail</groupId>
     <artifactId>AsyncNetwork</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 Here is <a href="https://search.maven.org/classic/#artifactdetails%7Ccom.github.oughttoprevail%7CAsyncNetwork%7C1.0.1%7Cjar">The Central Repository</a>.
@@ -23,19 +23,24 @@ Here is <a href="https://search.maven.org/classic/#artifactdetails%7Ccom.github.
 To create a client you would do:
 ```java
 		Client.newClient()
-				.onConnect(client -> client.readByte(aByte -> System.out.println("BYTE " + aByte), true))
+				.onConnect(client -> WritablePacketBuilder.create()
+						.putByte(Byte.MAX_VALUE)
+						.build()
+						.writeAndClose(client))
 				.connectLocalHost(/*Specify your port here (0-65535) example: 6000*/6000);
 ```
 To create a server you would do:
 ```java
-		Server.newServer()
-				.onBind(server -> System.out.println("Bind successful"))
-				.onClose(disconnectionType -> System.out.println("Closed " + disconnectionType))
-				.onConnection(serverClient -> serverClient.onDisconnect(disconnectionType -> System.out.println(
-						"Client disconnected " + disconnectionType))
-						.putByte(Byte.MAX_VALUE)
-						.write())
-				.bindLocalHost(/*Specify your port here (0-65535) example: 6000*/6000);
+ReadablePacket packet = ReadablePacketBuilder.create().aByte().build();
+		Server.newServer().onConnection(client ->
+		{
+			packet.readAlways(client, readResult ->
+			{
+				byte value = readResult.poll();
+				System.out.println("VALUE " + value);
+			});
+			client.onDisconnect(disconnectionType -> System.out.println("Disconnected" + disconnectionType));
+		}).bindLocalHost(6000);
 ```
 
 And you're finished! now you can use AsyncNetwork for your networking projects. Good luck!

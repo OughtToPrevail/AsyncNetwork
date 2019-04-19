@@ -29,4 +29,14 @@ public interface ReadablePacket
 	 * @return this
 	 */
 	ReadablePacket read(Channel<?> channel, Consumer<ReadResult> consumer);
+	
+	/**
+	 * Reads from the specified channel, once the read has finished the specified consumer will be
+	 * invoked with the results then repeats this again.
+	 *
+	 * @param channel to read from
+	 * @param consumer to invoke with the results once the read operation has completed
+	 * @return this
+	 */
+	ReadablePacket readAlways(Channel<?> channel, Consumer<ReadResult> consumer);
 }
