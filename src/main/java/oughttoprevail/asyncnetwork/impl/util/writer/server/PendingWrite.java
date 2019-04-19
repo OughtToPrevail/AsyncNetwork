@@ -20,8 +20,6 @@ import java.nio.ByteBuffer;
 import oughttoprevail.asyncnetwork.Channel;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-;
-
 public class PendingWrite
 {
 	private final ByteBuffer writeBuffer;

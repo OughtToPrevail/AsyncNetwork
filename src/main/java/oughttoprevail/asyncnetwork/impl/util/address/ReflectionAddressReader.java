@@ -90,7 +90,9 @@ public class ReflectionAddressReader implements AddressReader
 			}
 		} else
 		{
-			return ADDRESS_AS_LONG ? UNSAFE.getLong(directByteBuffer, ADDRESS_FIELD_OFFSET) : UNSAFE.getInt(directByteBuffer, ADDRESS_FIELD_OFFSET);
+			return ADDRESS_AS_LONG ? UNSAFE.getLong(directByteBuffer, ADDRESS_FIELD_OFFSET) : UNSAFE.getInt(
+					directByteBuffer,
+					ADDRESS_FIELD_OFFSET);
 		}
 		return -1;
 	}

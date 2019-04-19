@@ -13,21 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package oughttoprevail.asyncnetwork.exceptions;
+package oughttoprevail.asyncnetwork.packet;
 
-import oughttoprevail.asyncnetwork.packet.WritablePacket;
+import oughttoprevail.asyncnetwork.Channel;
+import oughttoprevail.asyncnetwork.util.Consumer;
 
-/**
- * Thrown when a call to a closed {@link WritablePacket} has occurred.
- */
-public class PacketClosedException extends IllegalStateException
+public interface ReadablePacket
 {
 	/**
-	 * Constructs an {@link PacketClosedException} which is thrown when a
-	 * call to a closed {@link WritablePacket} has occurred.
+	 * Reads from the specified channel, once the read has finished the specified consumer will be
+	 * invoked with the results.
+	 *
+	 * @param channel to read from
+	 * @param consumer to invoke with the results once the read operation has completed
+	 * @return this
 	 */
-	public PacketClosedException()
-	{
-	
-	}
+	ReadablePacket read(Channel<?> channel, Consumer<ReadResult> consumer);
 }

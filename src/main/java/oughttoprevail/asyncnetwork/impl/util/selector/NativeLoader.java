@@ -21,7 +21,7 @@ import java.net.URL;
 import oughttoprevail.asyncnetwork.exceptions.LoadException;
 import oughttoprevail.asyncnetwork.util.OS;
 
-interface NativeLoader
+public interface NativeLoader
 {
 	/**
 	 * Loads the specified file + extension.
@@ -49,9 +49,8 @@ interface NativeLoader
 				return true;
 			} catch(Throwable e)
 			{
-				try
+				try(InputStream in = url.openStream())
 				{
-					InputStream in = url.openStream();
 					String path;
 					//remove "/"
 					resource = resource.substring(1);
@@ -62,7 +61,6 @@ interface NativeLoader
 					{
 						path = DesktopNativeLoader.copy(file, extension, resource, in);
 					}
-					in.close();
 					
 					System.load(path);
 					return true;

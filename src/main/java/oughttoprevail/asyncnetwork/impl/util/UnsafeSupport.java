@@ -19,14 +19,15 @@ public class UnsafeSupport
 {
 	private static boolean supported;
 	
-	static {
+	static
+	{
 		try
 		{
 			if(UnsafeGetter.getUnsafe() != null)
 			{
-				supported =true;
+				supported = true;
 			}
-		}catch(Throwable throwable)
+		} catch(Throwable ignored)
 		{
 		}
 	}

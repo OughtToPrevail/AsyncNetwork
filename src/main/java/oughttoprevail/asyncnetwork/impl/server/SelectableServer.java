@@ -129,7 +129,8 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 			
 			case THREAD_PER_CLIENT:
 			{
-				return newThreadPerClient();
+				newThreadPerClient();
+				return null;
 			}
 			
 			default:
@@ -192,7 +193,8 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 					};
 				} else
 				{
-					throw new UnsupportedOperationException("Selector created when OS can't be found. SelectableServer failed!");
+					throw new UnsupportedOperationException(
+							"Selector created when OS can't be found. SelectableServer failed!");
 				}
 				//Allocate a buffer the size of the array size multiplied by Util.INT_BYTES * 2 because each array element should contain 2 integers.
 				IndexesBuffer buffer = IndexesBuffer.newIndexesBuffer(selectArraySize * (Util.INT_BYTES * 2));
@@ -260,10 +262,7 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 		{
 			selector.createSelector(serverSocket, threadsCount);
 			IndexedList<S> clients = getClientList();
-			WindowsSelectorFlags<S> flags = new WindowsSelectorFlags<S>(this,
-					clients,
-					selector,
-					serverSocket)
+			WindowsSelectorFlags<S> flags = new WindowsSelectorFlags<S>(this, clients, selector, serverSocket)
 			{
 				@Override
 				protected void connected(S client)
@@ -281,7 +280,8 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 			{
 				ThreadCreator.newThread("WindowsSelector (" + i + ")", () ->
 				{
-					ByteBufferElement resultElement = ByteBufferPool.getInstance().take(/*opcode*/Util.BYTE_BYTES + /*client index*/Util.INT_BYTES + /*is read*/Util.BYTE_BYTES + /*the received bytes*/Util.INT_BYTES);
+					ByteBufferElement resultElement = ByteBufferPool.getInstance()
+							.take(/*opcode*/Util.BYTE_BYTES + /*client index*/Util.INT_BYTES + /*is read*/Util.BYTE_BYTES + /*the received bytes*/Util.INT_BYTES);
 					ByteBuffer result = resultElement.getByteBuffer();
 					result.order(ByteOrder.nativeOrder());
 					int selectTimeout = getSelectTimeout();
@@ -345,7 +345,8 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 			{
 				try
 				{
-					ExecutorService executor = OS.ANDROID ? Executors.newFixedThreadPool(getThreadsCount()) : Executors.newWorkStealingPool(getThreadsCount());
+					ExecutorService executor = OS.ANDROID ? Executors.newFixedThreadPool(getThreadsCount()) : Executors.newWorkStealingPool(
+							getThreadsCount());
 					StatedCount count = new StatedCount();
 					int javaSelectTimeout = selectTimeout == -1 ? 0 : selectTimeout;
 					while(javaSelector.isOpen())
@@ -487,10 +488,8 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 	/**
 	 * Creates a new {@link Thread} which handles connections and creates a new
 	 * thread per connection.
-	 *
-	 * @return null
 	 */
-	private Closeable newThreadPerClient()
+	private void newThreadPerClient()
 	{
 		ServerSocketChannel server = getServerChannel();
 		IndexedList<S> clients = getClientList();
@@ -528,7 +527,6 @@ public abstract class SelectableServer<T extends IServer, S extends IServerClien
 				}
 			}
 		});
-		return null;
 	}
 	
 	/**

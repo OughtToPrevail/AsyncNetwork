@@ -13,40 +13,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package oughttoprevail.asyncnetwork.impl.util.reader;
+package oughttoprevail.asyncnetwork.impl.packet;
 
-import java.nio.ByteBuffer;
-
+import oughttoprevail.asyncnetwork.Channel;
+import oughttoprevail.asyncnetwork.packet.ReadResult;
+import oughttoprevail.asyncnetwork.packet.ReadablePacket;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-class Request
+class RegisteredPacket
 {
-	private final Consumer<ByteBuffer> request;
-	private final int requestLength;
+	private final ReadablePacket packet;
+	private final Consumer<ReadResult> readResultConsumer;
 	
-	Request(Consumer<ByteBuffer> request, int requestLength)
+	RegisteredPacket(ReadablePacket packet, Consumer<ReadResult> readResultConsumer)
 	{
-		this.request = request;
-		this.requestLength = requestLength;
+		this.packet = packet;
+		this.readResultConsumer = readResultConsumer;
 	}
 	
-	/**
-	 * Returns the consumer of this request.
-	 *
-	 * @return the consumer of this request
-	 */
-	Consumer<ByteBuffer> getRequest()
+	void read(Channel<?> channel)
 	{
-		return request;
-	}
-	
-	/**
-	 * Returns how many bytes this request is requesting.
-	 *
-	 * @return how many bytes this request is requesting
-	 */
-	int getRequestLength()
-	{
-		return requestLength;
+		packet.read(channel, readResultConsumer);
 	}
 }

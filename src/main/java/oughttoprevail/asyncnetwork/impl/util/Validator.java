@@ -31,11 +31,6 @@ public interface Validator
 		}
 	}
 	
-	static void requireNonNullString(String str)
-	{
-		requireNonNull(str, "String");
-	}
-	
 	static void validatePort(int port)
 	{
 		if(port < 0 || port > 0xFFFF)

@@ -17,7 +17,7 @@ package oughttoprevail.asyncnetwork.impl.util.address;
 
 import java.nio.ByteBuffer;
 
-public interface AddressReader
+interface AddressReader
 {
 	long readAddress(ByteBuffer directByteBuffer);
 }

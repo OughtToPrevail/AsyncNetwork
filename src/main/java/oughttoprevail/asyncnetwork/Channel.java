@@ -25,7 +25,6 @@ import java.nio.channels.SocketChannel;
 
 import oughttoprevail.asyncnetwork.exceptions.ChannelClosedException;
 import oughttoprevail.asyncnetwork.impl.ChannelImpl;
-import oughttoprevail.asyncnetwork.packet.SerDes;
 import oughttoprevail.asyncnetwork.util.Consumer;
 import oughttoprevail.asyncnetwork.util.OS;
 
@@ -45,7 +44,7 @@ public interface Channel<T extends Channel>
 	 * Default buffer size.
 	 */
 	int DEFAULT_BUFFER_SIZE = 4096;
-
+	
 	/**
 	 * Prints an exception by calling {@link PrintStream#println()} of {@link System#err} with {@link
 	 * Throwable#toString()}.
@@ -76,8 +75,7 @@ public interface Channel<T extends Channel>
 	 * {@link Socket#setSendBufferSize(int)} or {@link Socket#setReceiveBufferSize(int)} have
 	 * thrown one.
 	 */
-	static void initializeDefaultOptions(SocketChannel channel, int bufferSize)
-			throws IOException
+	static void initializeDefaultOptions(SocketChannel channel, int bufferSize) throws IOException
 	{
 		if(OS.ANDROID)
 		{
@@ -132,7 +130,7 @@ public interface Channel<T extends Channel>
 	 * @return whether the channel will clear the write buffer after finishing write
 	 */
 	boolean isClearAfterWrite();
-
+	
 	/**
 	 * Writes the specified buffer to this channel's {@link SocketChannel}
 	 * is invoked with the specified {@link ByteBuffer}.
@@ -142,7 +140,7 @@ public interface Channel<T extends Channel>
 	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
 	 */
 	T write(ByteBuffer byteBuffer);
-
+	
 	/**
 	 * Writes the specified buffer to this channel's {@link SocketChannel} and once
 	 * the write has finished the specified onWriteFinished is invoked with the specified {@link ByteBuffer}.
@@ -176,259 +174,6 @@ public interface Channel<T extends Channel>
 	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
 	 */
 	T readByteBuffer(Consumer<ByteBuffer> consumer, int length);
-	
-	/**
-	 * Invokes the specified consumer with the channel's read {@link ByteBuffer} when {@link
-	 * ByteBuffer#remaining()} returns is equal or more to the specified length
-	 * and queues this again at the end of the queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with the channel's read {@link ByteBuffer}
-	 * when {@link ByteBuffer#remaining()} returns the specified length
-	 * @param length the amount of bytes that will be received
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readByteBufferAlways(Consumer<ByteBuffer> consumer, int length);
-	
-	/**
-	 * Invokes the specified consumer with a received byte.
-	 *
-	 * @param consumer the consumer that will be called with a received byte
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readByte(Consumer<Byte> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received byte and queues this again at
-	 * the end of the queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with a received byte
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readByteAlways(Consumer<Byte> consumer);
-	
-	/**
-	 * Invokes the specified consumer with the received bytes.
-	 *
-	 * @param consumer the consumer that will be called with the received bytes
-	 * @param length the amount of bytes that will be received
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readBytes(Consumer<byte[]> consumer, int length);
-	
-	/**
-	 * Invokes the specified consumer with the received bytes and queues this again at
-	 * the end of the queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with the received bytes
-	 * @param length the amount of bytes that will be received
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readBytesAlways(Consumer<byte[]> consumer, int length);
-	
-	/**
-	 * Invokes the specified consumer with a received char.
-	 *
-	 * @param consumer the consumer that will be called with a received char
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readChar(Consumer<Character> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received char and queues this again at
-	 * the end of the queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with a received char
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readCharAlways(Consumer<Character> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received double.
-	 *
-	 * @param consumer the consumer that will be called with a received double
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readDouble(Consumer<Double> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received double and queues this again at
-	 * the end of the queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with a received double
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readDoubleAlways(Consumer<Double> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received float.
-	 *
-	 * @param consumer the consumer that will be called with a received float
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readFloat(Consumer<Float> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received float and queues this again at
-	 * the end of the queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with a received float
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readFloatAlways(Consumer<Float> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received int.
-	 *
-	 * @param consumer the consumer that will be called with a received int
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readInt(Consumer<Integer> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received int and queues this again at
-	 * the end of the queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with a received int
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readIntAlways(Consumer<Integer> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received long.
-	 *
-	 * @param consumer the consumer that will be called with a received long
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readLong(Consumer<Long> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received long and queues this again at
-	 * the end of the queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with a received long
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readLongAlways(Consumer<Long> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received short.
-	 *
-	 * @param consumer the consumer that will be called with a received short
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readShort(Consumer<Short> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received short and queues this again at
-	 * the end of the queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with a received short
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readShortAlways(Consumer<Short> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received boolean.
-	 *
-	 * @param consumer the consumer that will be called with a received boolean
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readBoolean(Consumer<Boolean> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received boolean and queues this again at
-	 * the end of the queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with a received boolean
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readBooleanAlways(Consumer<Boolean> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received string.
-	 *
-	 * @param consumer the consumer that will be called with a received string
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readString(Consumer<String> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received string and queues this again at
-	 * the end of the queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with a received string
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	T readStringAlways(Consumer<String> consumer);
-	
-	/**
-	 * Invokes the specified consumer with a received object after deserialization made by specified serDes.
-	 *
-	 * @param consumer the consumer that will be called with a received object
-	 * @param serDes which will deserialize the {@link ByteBuffer} to the {@link Object}
-	 * @param <O> the type of {@link Object} being read.
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	<O> T readObject(Consumer<O> consumer, SerDes<O> serDes);
-	
-	/**
-	 * Invokes the specified consumer with a received object after deserialization made by specified serDes
-	 * and queues this again at the end of the queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with a received object
-	 * @param serDes which will deserialize the {@link ByteBuffer} to the {@link Object}
-	 * @param <O> the type of {@link Object} being read.
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	<O> T readObjectAlways(Consumer<O> consumer, SerDes<O> serDes);
-	
-	/**
-	 * Invokes the specified consumer with a received object or null if the object was sent as null
-	 * after deserialization made by specified serDes.
-	 *
-	 * @param consumer the consumer that will be called with a received object
-	 * @param serDes which will deserialize the {@link ByteBuffer} to the {@link Object}
-	 * @param <O> the type of {@link Object} being read.
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	<O> T readNullableObject(Consumer<O> consumer, SerDes<O> serDes);
-	
-	/**
-	 * Invokes the specified consumer with a received object or null if the object was sent as null
-	 * after deserialization made by specified serDes and queues this again at the end of the
-	 * queue after the consumer was invoked.
-	 *
-	 * @param consumer the consumer that will be called with a received object
-	 * @param serDes which will deserialize the {@link ByteBuffer} to the {@link Object}
-	 * @param <O> the type of {@link Object} being read.
-	 * @return this
-	 * @throws ChannelClosedException throws {@link ChannelClosedException} if the channel is closed
-	 */
-	<O> T readNullableObjectAlways(Consumer<O> consumer, SerDes<O> serDes);
 	
 	/**
 	 * Returns the {@link ByteBuffer} size.

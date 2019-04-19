@@ -53,10 +53,6 @@ public interface Server extends IServer<Server, ServerClient>
 			int threadsCount,
 			SelectorImplementation implementation)
 	{
-		return new ServerImpl(bufferSize,
-				selectTimeout,
-				selectArraySize,
-				threadsCount,
-				implementation);
+		return new ServerImpl(bufferSize, selectTimeout, selectArraySize, threadsCount, implementation);
 	}
 }

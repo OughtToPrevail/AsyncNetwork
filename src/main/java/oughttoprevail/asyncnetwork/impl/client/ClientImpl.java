@@ -197,16 +197,11 @@ public class ClientImpl extends ChannelImpl<Client> implements Client
 	@Override
 	public Client onConnect(Consumer<Client> onConnect)
 	{
-		if(connected)
+		if(isConnected() && onConnect != null)
 		{
-			if(onConnect != null)
-			{
-				onConnect.accept(this);
-			}
-		} else
-		{
-			this.onConnect = onConnect;
+			onConnect.accept(this);
 		}
+		this.onConnect = onConnect;
 		return this;
 	}
 	

@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.AccessController;
 
-public interface DesktopNativeLoader
+interface DesktopNativeLoader
 {
 	/**
 	 * The temporary folder path of the operating system.

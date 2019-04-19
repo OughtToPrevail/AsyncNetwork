@@ -43,21 +43,21 @@ public interface SerDes<T>
 	}
 	
 	/**
-	 * Serializes the specified object to a {@link ByteBuffer}.
+	 * Serializes the specified t to a {@link ByteBuffer}.
 	 *
-	 * @param object to be serialized
+	 * @param t to be serialized
 	 * @param byteBuffer which this {@link Object} will be put in
 	 */
-	void serialize(T object, ByteBuffer byteBuffer);
+	void serialize(T t, ByteBuffer byteBuffer);
 	
 	/**
 	 * Returns how many in bytes will be put in when using {@link SerDes#serialize(Object, ByteBuffer)}.
-	 * if {@link #isFixedLength()} is true then the specified object is possibly null
+	 * if {@link #isFixedLength()} is true then the specified t is possibly null
 	 *
-	 * @param object which will be tested for the serialized length or possibly null if {@link #isFixedLength()} is true
+	 * @param t which will be tested for the serialized length or possibly null if {@link #isFixedLength()} is true
 	 * @return how many in bytes will be put in when using {@link SerDes#serialize(Object, ByteBuffer)}
 	 */
-	short getSerializedLength(T object);
+	int getSerializedLength(T t);
 	
 	/**
 	 * Deserializes the specified serialized into the specified T.

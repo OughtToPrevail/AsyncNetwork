@@ -7,7 +7,7 @@ import java.io.InputStream;
 
 import oughttoprevail.asyncnetwork.Channel;
 
-public interface AndroidNativeLoader
+interface AndroidNativeLoader
 {
 	/**
 	 * Returns the temporary path of the current machine.

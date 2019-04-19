@@ -122,7 +122,7 @@ public class ByteBufferPool
 			}
 			
 			// The first entry that was found had no ByteBuffers available, so we must now look at greater
-			// entry that doesn't pass the ByteBufferPool.RANGE to see if one can be found.
+			// entry that doesn't instructionPass the ByteBufferPool.RANGE to see if one can be found.
 			// If one still cannot be found, allocate a new one.
 			Collection<Deque<ByteBuffer>> tailMap = buffers.subMap(size, size + RANGE).values();
 			for(Deque<ByteBuffer> byteBuffers : tailMap)

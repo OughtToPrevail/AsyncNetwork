@@ -13,21 +13,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package oughttoprevail.asyncnetwork.exceptions;
+package oughttoprevail.asyncnetwork.util;
 
-import oughttoprevail.asyncnetwork.packet.WritablePacket;
+import java.util.Objects;
 
-/**
- * Thrown when a call to a closed {@link WritablePacket} has occurred.
- */
-public class PacketClosedException extends IllegalStateException
+@FunctionalInterface
+public interface TriConsumer<A, B, C>
 {
-	/**
-	 * Constructs an {@link PacketClosedException} which is thrown when a
-	 * call to a closed {@link WritablePacket} has occurred.
-	 */
-	public PacketClosedException()
-	{
+	void accept(A a, B b, C c);
 	
+	default TriConsumer<A, B, C> andThen(TriConsumer<? super A, ? super B, ? super C> after)
+	{
+		Objects.requireNonNull(after);
+		return (a, b, c) ->
+		{
+			accept(a, b, c);
+			after.accept(a, b, c);
+		};
 	}
 }

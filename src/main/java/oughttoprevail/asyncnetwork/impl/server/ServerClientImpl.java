@@ -125,7 +125,7 @@ public abstract class ServerClientImpl extends ChannelImpl<ServerClient> impleme
 	 * {@link ServerClientImpl#createWriter()} can know whether to copy a
 	 * {@link WindowsWriter} or {@link ServerWriter}
 	 *
-	 * @return hether the owning server is implemented with windows
+	 * @return whether the owning server is implemented with windows
 	 */
 	protected abstract boolean isWindowsImplementedServer();
 }

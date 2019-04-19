@@ -13,21 +13,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package oughttoprevail.asyncnetwork.exceptions;
+package oughttoprevail.asyncnetwork.packet;
 
-import oughttoprevail.asyncnetwork.packet.WritablePacket;
+import java.nio.ByteBuffer;
 
-/**
- * Thrown when a call to a closed {@link WritablePacket} has occurred.
- */
-public class PacketClosedException extends IllegalStateException
+public interface PassedNumber<T extends Number>
 {
 	/**
-	 * Constructs an {@link PacketClosedException} which is thrown when a
-	 * call to a closed {@link WritablePacket} has occurred.
+	 * Returns a {@link Number} read from the specified byteBuffer.
+	 *
+	 * @param byteBuffer containing the {@link Number} to return
+	 * @return a {@link Number} read from the specified byteBuffer
 	 */
-	public PacketClosedException()
-	{
+	T get(ByteBuffer byteBuffer);
 	
-	}
+	/**
+	 * Returns the size in bytes of the number returned from {@link PassedNumber}.
+	 *
+	 * @return the size in bytes of the number returned from {@link PassedNumber}
+	 */
+	int getSize();
 }

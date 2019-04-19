@@ -44,7 +44,8 @@ public abstract class SelectorFlagsImpl<S extends IServerClient> implements Sele
 		this.clients = clients;
 		this.read = read;
 		this.write = write;
-		executor = OS.ANDROID ? Executors.newFixedThreadPool(server.getThreadsCount()) : Executors.newWorkStealingPool(server.getThreadsCount());
+		executor = OS.ANDROID ? Executors.newFixedThreadPool(server.getThreadsCount()) : Executors.newWorkStealingPool(
+				server.getThreadsCount());
 	}
 	
 	/**

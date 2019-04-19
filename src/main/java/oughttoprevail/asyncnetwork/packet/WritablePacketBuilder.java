@@ -15,32 +15,21 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork.packet;
 
-import oughttoprevail.asyncnetwork.impl.packet.PacketBuilderImpl;
-import oughttoprevail.asyncnetwork.impl.packet.SynchronizedPacketBuilderImpl;
+import oughttoprevail.asyncnetwork.impl.packet.WritablePacketBuilderImpl;
 
 /**
- * Implementation at {@link PacketBuilderImpl} and {@link SynchronizedPacketBuilderImpl}.
+ * Implementation at {@link WritablePacketBuilderImpl}.
  */
-public interface PacketBuilder
+public interface WritablePacketBuilder
 {
 	/**
-	 * Returns a new {@link PacketBuilder}.
+	 * Returns a new {@link WritablePacketBuilder}.
 	 *
-	 * @return a new {@link PacketBuilder}
+	 * @return a new {@link WritablePacketBuilder}
 	 */
-	static PacketBuilder create()
+	static WritablePacketBuilder create()
 	{
-		return new PacketBuilderImpl();
-	}
-	
-	/**
-	 * Returns a new thread safe {@link PacketBuilder}.
-	 *
-	 * @return a new thread safe {@link PacketBuilder}
-	 */
-	static PacketBuilder createThreadSafe()
-	{
-		return new SynchronizedPacketBuilderImpl();
+		return new WritablePacketBuilderImpl();
 	}
 	
 	/**
@@ -49,7 +38,7 @@ public interface PacketBuilder
 	 * @param b the byte that will be put in the packet
 	 * @return this
 	 */
-	PacketBuilder putByte(int b);
+	WritablePacketBuilder putByte(int b);
 	
 	/**
 	 * Puts the specified bytes in the packet.
@@ -57,7 +46,7 @@ public interface PacketBuilder
 	 * @param bytes the bytes that will be put in the packet
 	 * @return this
 	 */
-	PacketBuilder putBytes(byte[] bytes);
+	WritablePacketBuilder putBytes(byte[] bytes);
 	
 	/**
 	 * Puts the specified bytes in the packet.
@@ -67,7 +56,7 @@ public interface PacketBuilder
 	 * @param length the length that will be used when putting in the packet
 	 * @return this
 	 */
-	PacketBuilder putBytes(byte[] bytes, int offset, int length);
+	WritablePacketBuilder putBytes(byte[] bytes, int offset, int length);
 	
 	/**
 	 * Puts the specified char in the packet.
@@ -75,7 +64,7 @@ public interface PacketBuilder
 	 * @param c the char that will be put in the packet
 	 * @return this
 	 */
-	PacketBuilder putChar(char c);
+	WritablePacketBuilder putChar(char c);
 	
 	/**
 	 * Puts the specified double in packet.
@@ -83,7 +72,7 @@ public interface PacketBuilder
 	 * @param d the double that will be put in the packet
 	 * @return this
 	 */
-	PacketBuilder putDouble(double d);
+	WritablePacketBuilder putDouble(double d);
 	
 	/**
 	 * Puts the specified float in the packet.
@@ -91,7 +80,7 @@ public interface PacketBuilder
 	 * @param f the float that will be put in the packet
 	 * @return this
 	 */
-	PacketBuilder putFloat(float f);
+	WritablePacketBuilder putFloat(float f);
 	
 	/**
 	 * Puts the specified int in the packet.
@@ -99,7 +88,7 @@ public interface PacketBuilder
 	 * @param i the int that will be put in the packet
 	 * @return this
 	 */
-	PacketBuilder putInt(int i);
+	WritablePacketBuilder putInt(int i);
 	
 	/**
 	 * Puts the specified long in the packet.
@@ -107,7 +96,7 @@ public interface PacketBuilder
 	 * @param l the long that will be put in the packet
 	 * @return this
 	 */
-	PacketBuilder putLong(long l);
+	WritablePacketBuilder putLong(long l);
 	
 	/**
 	 * Puts the specified short in the packet.
@@ -115,15 +104,15 @@ public interface PacketBuilder
 	 * @param s the short that will be put in the packet
 	 * @return this
 	 */
-	PacketBuilder putShort(short s);
-
+	WritablePacketBuilder putShort(short s);
+	
 	/**
 	 * Puts the specified boolean in the packet.
 	 *
 	 * @param b the boolean that will be put in the packet
 	 * @return this
 	 */
-	PacketBuilder putBoolean(boolean b);
+	WritablePacketBuilder putBoolean(boolean b);
 	
 	/**
 	 * Puts the specified string in the packet.
@@ -131,7 +120,7 @@ public interface PacketBuilder
 	 * @param s the string that will be put in the packet
 	 * @return this
 	 */
-	PacketBuilder putString(String s);
+	WritablePacketBuilder putString(String s);
 	
 	/**
 	 * Puts the specified object in the packet after serialization made by specified serDes.
@@ -140,7 +129,7 @@ public interface PacketBuilder
 	 * @param serDes serializes the specified object
 	 * @return this
 	 */
-	<T> PacketBuilder putObject(T object, SerDes<T> serDes);
+	<T> WritablePacketBuilder putObject(T object, SerDes<T> serDes);
 	
 	/**
 	 * Puts the a boolean declaring whether the specified object is null
@@ -150,7 +139,7 @@ public interface PacketBuilder
 	 * @param serDes serializes the specified object
 	 * @return this
 	 */
-	<T> PacketBuilder putNullableObject(T object, SerDes<T> serDes);
+	<T> WritablePacketBuilder putNullableObject(T object, SerDes<T> serDes);
 	
 	/**
 	 * Returns the total size in bytes of the packet.
@@ -160,18 +149,9 @@ public interface PacketBuilder
 	int getSize();
 	
 	/**
-	 * Returns a new {@link Packet} based on the entered parameters.
+	 * Returns a new {@link WritablePacket} based on the entered parameters.
 	 *
-	 * @return a new {@link Packet} based on the entered parameters
+	 * @return a new {@link WritablePacket} based on the entered parameters
 	 */
-	Packet build();
-	
-	/**
-	 * Returns a new {@link Packet} based on the entered parameters.
-	 * This {@link Packet} will be thread safe and use a {@code synchronized}
-	 * with a lock.
-	 *
-	 * @return a new {@link Packet} based on the entered parameters
-	 */
-	Packet threadSafeBuild();
+	WritablePacket build();
 }

@@ -7,7 +7,8 @@ import java.util.Objects;
  * This is for Android since it doesn't support {@link java.util.function.Consumer} until API level 24+.
  */
 @FunctionalInterface
-public interface Consumer<T> {
+public interface Consumer<T>
+{
 	
 	/**
 	 * Performs this operation on the given argument.
@@ -28,8 +29,13 @@ public interface Consumer<T> {
 	 * operation followed by the {@code after} operation
 	 * @throws NullPointerException if {@code after} is null
 	 */
-	default Consumer<T> andThen(Consumer<? super T> after) {
+	default Consumer<T> andThen(Consumer<? super T> after)
+	{
 		Objects.requireNonNull(after);
-		return (T t) -> { accept(t); after.accept(t); };
+		return (T t) ->
+		{
+			accept(t);
+			after.accept(t);
+		};
 	}
 }

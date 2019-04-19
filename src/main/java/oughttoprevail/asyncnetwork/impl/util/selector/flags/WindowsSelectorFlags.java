@@ -87,7 +87,7 @@ public abstract class WindowsSelectorFlags<S extends IServerClient>
 		remoteAddress = findOffset(socketChannelImpl, "remoteAddress");
 		state = findOffset(socketChannelImpl, "state");
 		socketAddressesElement = ByteBufferPool.getInstance()
-				.take(Byte.BYTES * 2 + Short.BYTES * 2 + Math.max(INET4_BYTES, INET6_BYTES) * 2);
+				.take(Util.BYTE_BYTES * 2 + Util.SHORT_BYTES * 2 + Math.max(INET4_BYTES, INET6_BYTES) * 2);
 		socketAddresses = socketAddressesElement.getByteBuffer();
 		socketAddresses.order(ByteOrder.nativeOrder());
 		socketAddressesAddress = Util.address(socketAddresses);
@@ -181,24 +181,20 @@ public abstract class WindowsSelectorFlags<S extends IServerClient>
 						if(remoteAddress != null)
 						{
 							SocketChannel socketChannel = data.channel;
-							if(fixChannel(socketChannel, localAddress, remoteAddress))
+							fixChannel(socketChannel, localAddress, remoteAddress);
+							selector.registerClient(serverSocket, socket);
+							int clientsIndex = data.index;
+							S client = initializeClient(socketChannel, clientsIndex);
+							if(client != null)
 							{
-								selector.registerClient(serverSocket, socket);
-								int clientsIndex = data.index;
-								S client = initializeClient(socketChannel, clientsIndex);
-								if(client != null)
-								{
-									clients.add(clientsIndex, client);
-									socketAddresses.clear();
-									AcceptEx();
-									client.manager().setFD(socket);
-									ByteBufferElement readBuffer = client.manager().getReadBuffer();
-									selector.WSARecv(socket,
-											readBuffer.address(),
-											readBuffer.getByteBuffer().capacity());
-									connected(client);
-									return;
-								}
+								clients.add(clientsIndex, client);
+								socketAddresses.clear();
+								AcceptEx();
+								client.manager().setFD(socket);
+								ByteBufferElement readBuffer = client.manager().getReadBuffer();
+								selector.WSARecv(socket, readBuffer.address(), readBuffer.getByteBuffer().capacity());
+								connected(client);
+								return;
 							}
 						}
 						socketAddresses.clear();
@@ -269,12 +265,11 @@ public abstract class WindowsSelectorFlags<S extends IServerClient>
 	
 	private static final int CONNECTED_STATE = 2;
 	
-	private boolean fixChannel(SocketChannel channel, InetSocketAddress local, InetSocketAddress remote)
+	private void fixChannel(SocketChannel channel, InetSocketAddress local, InetSocketAddress remote)
 	{
 		UNSAFE.putObject(channel, localAddress, local);
 		UNSAFE.putObject(channel, remoteAddress, remote);
 		UNSAFE.putInt(channel, state, CONNECTED_STATE);
-		return true;
 	}
 	
 	protected abstract void connected(S client);

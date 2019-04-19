@@ -67,12 +67,13 @@ public class ClientWriter implements Writer<Client>
 		//ignored this is a blocking process
 		return false;
 	}
+
 	/**
 	 * Waits until the writer has finished all pending writes
 	 */
 	@Override
 	public void close()
 	{
-	
+
 	}
 }

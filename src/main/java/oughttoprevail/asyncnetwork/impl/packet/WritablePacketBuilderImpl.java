@@ -20,12 +20,12 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import oughttoprevail.asyncnetwork.impl.Util;
-import oughttoprevail.asyncnetwork.packet.Packet;
-import oughttoprevail.asyncnetwork.packet.PacketBuilder;
 import oughttoprevail.asyncnetwork.packet.SerDes;
+import oughttoprevail.asyncnetwork.packet.WritablePacket;
+import oughttoprevail.asyncnetwork.packet.WritablePacketBuilder;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-public class PacketBuilderImpl implements PacketBuilder
+public class WritablePacketBuilderImpl implements WritablePacketBuilder
 {
 	/**
 	 * A queue of instructions of how to create a {@link ByteBuffer}
@@ -37,7 +37,7 @@ public class PacketBuilderImpl implements PacketBuilder
 	 */
 	private int size;
 	
-	public PacketBuilderImpl()
+	public WritablePacketBuilderImpl()
 	{
 		instructions = new ArrayDeque<>();
 	}
@@ -50,7 +50,7 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @param instructionSize is how much in bytes this instruction will add
 	 * @return this
 	 */
-	private PacketBuilder enqueue(Consumer<ByteBuffer> instruction, int instructionSize)
+	private WritablePacketBuilder enqueue(Consumer<ByteBuffer> instruction, int instructionSize)
 	{
 		size += instructionSize;
 		instructions.addLast(instruction);
@@ -64,7 +64,7 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putByte(int b)
+	public WritablePacketBuilder putByte(int b)
 	{
 		return enqueue(byteBuffer -> byteBuffer.put((byte) b), Util.BYTE_BYTES);
 	}
@@ -76,9 +76,9 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putBytes(byte[] bytes)
+	public WritablePacketBuilder putBytes(byte[] bytes)
 	{
-		return enqueue(byteBuffer -> byteBuffer.put(bytes), bytes.length * Util.BYTE_BYTES);
+		return enqueue(byteBuffer -> byteBuffer.put(bytes), bytes.length);
 	}
 	
 	/**
@@ -90,7 +90,7 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putBytes(byte[] bytes, int offset, int length)
+	public WritablePacketBuilder putBytes(byte[] bytes, int offset, int length)
 	{
 		int totalLength = length - offset;
 		if(offset < 0 || length < 0 || length <= offset || bytes.length < totalLength)
@@ -107,7 +107,7 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putChar(char c)
+	public WritablePacketBuilder putChar(char c)
 	{
 		return enqueue(byteBuffer -> byteBuffer.putChar(c), Util.CHAR_BYTES);
 	}
@@ -119,7 +119,7 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putDouble(double d)
+	public WritablePacketBuilder putDouble(double d)
 	{
 		return enqueue(byteBuffer -> byteBuffer.putDouble(d), Util.DOUBLE_BYTES);
 	}
@@ -131,7 +131,7 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putFloat(float f)
+	public WritablePacketBuilder putFloat(float f)
 	{
 		return enqueue(byteBuffer -> byteBuffer.putFloat(f), Util.FLOAT_BYTES);
 	}
@@ -143,7 +143,7 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putInt(int i)
+	public WritablePacketBuilder putInt(int i)
 	{
 		return enqueue(byteBuffer -> byteBuffer.putInt(i), Util.INT_BYTES);
 	}
@@ -155,7 +155,7 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putLong(long l)
+	public WritablePacketBuilder putLong(long l)
 	{
 		return enqueue(byteBuffer -> byteBuffer.putLong(l), Util.LONG_BYTES);
 	}
@@ -167,7 +167,7 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putShort(short s)
+	public WritablePacketBuilder putShort(short s)
 	{
 		return enqueue(byteBuffer -> byteBuffer.putShort(s), Util.SHORT_BYTES);
 	}
@@ -179,9 +179,9 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putBoolean(boolean b)
+	public WritablePacketBuilder putBoolean(boolean b)
 	{
-		return putByte(b ? 1 : 0);
+		return putByte(Util.toByte(b));
 	}
 	
 	/**
@@ -191,11 +191,11 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public PacketBuilder putString(String s)
+	public WritablePacketBuilder putString(String s)
 	{
 		byte[] bytes = s.getBytes(Util.UTF_8);
-		short len = (short) bytes.length;
-		return putShort(len).putBytes(bytes);
+		int length = bytes.length;
+		return putInt(length).putBytes(bytes);
 	}
 	
 	/**
@@ -206,9 +206,9 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public <T> PacketBuilder putObject(T object, SerDes<T> serDes)
+	public <T> WritablePacketBuilder putObject(T object, SerDes<T> serDes)
 	{
-		short serializedLength = serDes.getSerializedLength(object);
+		int serializedLength = serDes.getSerializedLength(object);
 		if(serializedLength <= 0)
 		{
 			throw new IllegalArgumentException("Serialized length cannot be less than 0!");
@@ -220,7 +220,7 @@ public class PacketBuilderImpl implements PacketBuilder
 		{
 			return enqueue(byteBuffer ->
 			{
-				byteBuffer.putShort(serializedLength);
+				byteBuffer.putInt(serializedLength);
 				serDes.serialize(object, byteBuffer);
 			}, serializedLength);
 		}
@@ -235,7 +235,7 @@ public class PacketBuilderImpl implements PacketBuilder
 	 * @return this
 	 */
 	@Override
-	public <T> PacketBuilder putNullableObject(T object, SerDes<T> serDes)
+	public <T> WritablePacketBuilder putNullableObject(T object, SerDes<T> serDes)
 	{
 		putBoolean(object != null);
 		if(object != null)
@@ -257,27 +257,14 @@ public class PacketBuilderImpl implements PacketBuilder
 	}
 	
 	/**
-	 * Returns a new {@link Packet} based on the entered parameters.
+	 * Returns a new {@link WritablePacket} based on the entered parameters.
 	 *
-	 * @return a new {@link Packet} based on the entered parameters
+	 * @return a new {@link WritablePacket} based on the entered parameters
 	 */
 	@Override
-	public Packet build()
+	public WritablePacket build()
 	{
-		return new PacketImpl(createByteBuffer());
-	}
-	
-	/**
-	 * Returns a new {@link Packet} based on the entered parameters.
-	 * This {@link Packet} will be thread safe and use a {@code synchronized}
-	 * with a lock.
-	 *
-	 * @return a new {@link Packet} based on the entered parameters
-	 */
-	@Override
-	public Packet threadSafeBuild()
-	{
-		return new SynchronizedPacketImpl(createByteBuffer());
+		return new WritablePacketImpl(createByteBuffer());
 	}
 	
 	private ByteBufferElement createByteBuffer()

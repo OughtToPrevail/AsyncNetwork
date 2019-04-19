@@ -61,4 +61,19 @@ public interface Util
 	{
 		return ((int) value) & 0xFFFF;
 	}
+	
+	static short toUnsignedShort(byte value)
+	{
+		return (short) (((short) value) & 0xff);
+	}
+	
+	static boolean toBoolean(ByteBuffer byteBuffer)
+	{
+		return byteBuffer.get() == 1;
+	}
+	
+	static int toByte(boolean b)
+	{
+		return b ? 1 : 0;
+	}
 }

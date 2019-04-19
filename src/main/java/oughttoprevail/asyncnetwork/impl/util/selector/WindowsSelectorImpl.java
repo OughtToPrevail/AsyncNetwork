@@ -53,7 +53,6 @@ public class WindowsSelectorImpl implements WindowsSelector
 	
 	private long handle;
 	private ByteBufferElement addressesBufferElement;
-	private ByteBuffer addressesBuffer;
 	private long addressesBufferAddress;
 	
 	public WindowsSelectorImpl() throws LoadException
@@ -76,7 +75,7 @@ public class WindowsSelectorImpl implements WindowsSelector
 	{
 		handle = createSelector0(serverSocket, threads);
 		addressesBufferElement = ByteBufferPool.getInstance().take(addressSize * 2);
-		addressesBuffer = addressesBufferElement.getByteBuffer();
+		ByteBuffer addressesBuffer = addressesBufferElement.getByteBuffer();
 		addressesBuffer.order(ByteOrder.nativeOrder());
 		addressesBufferAddress = Util.address(addressesBuffer);
 	}
@@ -188,7 +187,8 @@ public class WindowsSelectorImpl implements WindowsSelector
 	 * @param length the amount of bytes that will be sent
 	 */
 	@Override
-	public void WSASend(int clientSocket, long writeBufferAddress, int length, PendingWrite pendingWrite) throws IOException
+	public void WSASend(int clientSocket, long writeBufferAddress, int length, PendingWrite pendingWrite)
+			throws IOException
 	{
 		int index = pendingWrites.index();
 		pendingWrites.add(index, pendingWrite);
@@ -213,7 +213,7 @@ public class WindowsSelectorImpl implements WindowsSelector
 	 * @param clientSocket the client (socket) file descriptor
 	 * when registering the file descriptor to the completion port handle
 	 * @throws IOException if the file descriptor (socket) failed to register to the completion port
-	 *                     handle
+	 * handle
 	 */
 	private native void registerClient0(int serverSocket, int clientSocket) throws IOException;
 	
@@ -235,10 +235,10 @@ public class WindowsSelectorImpl implements WindowsSelector
 	 *
 	 * @param handle the completion port handle value
 	 * @param timeout the timeout until to return timeout.
-	 * @throws IOException                                            if {@code GetQueuedCompletionStatus} returned false which means it didn't finish
-	 *                                                                successfully and the {@code event} (overlapped) is null
+	 * @throws IOException if {@code GetQueuedCompletionStatus} returned false which means it didn't finish
+	 * successfully and the {@code event} (overlapped) is null
 	 * @throws oughttoprevail.asyncnetwork.exceptions.SelectException if {@code GetQueuedCompletionStatus)
-	 *                                                                returned false which means it didn't finish successfully and the {@code event} (overlapped) isn't null
+	 * returned false which means it didn't finish successfully and the {@code event} (overlapped) isn't null
 	 */
 	private native int select0(long handle, int timeout, long result) throws IOException;
 	
@@ -305,5 +305,6 @@ public class WindowsSelectorImpl implements WindowsSelector
 	 * @param length the amount of bytes that will be sent
 	 * @param pendingWrite will be called once the WSASend has finished
 	 */
-	private native void WSASend0(int clientSocket, long writeBufferAddress, int length, int pendingWrite) throws IOException;
+	private native void WSASend0(int clientSocket, long writeBufferAddress, int length, int pendingWrite)
+			throws IOException;
 }

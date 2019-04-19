@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -33,11 +33,14 @@ import oughttoprevail.asyncnetwork.util.Consumer;
 
 public class ServerWriter implements Writer<ServerClient>
 {
-	private final Deque<ServerPendingWrite> pendingWrites = new ArrayDeque<>();
+	private final Queue<ServerPendingWrite> pendingWrites = new ArrayDeque<>();
 	private final AtomicBoolean exceptingNotification = new AtomicBoolean();
 	private CountDownLatch notifiable;
 	
-	private void write(ServerClient channel, ByteBuffer writeBuffer, Consumer<ByteBuffer> onWriteFinished, boolean continueWriting)
+	private void write(ServerClient channel,
+			ByteBuffer writeBuffer,
+			Consumer<ByteBuffer> onWriteFinished,
+			boolean continueWriting)
 	{
 		if(!continueWriting)
 		{
@@ -50,7 +53,7 @@ public class ServerWriter implements Writer<ServerClient>
 				}
 				if(!pendingWrites.isEmpty())
 				{
-					pendingWrites.offerLast(new ServerPendingWrite(channel, writeBuffer, onWriteFinished));
+					pendingWrites.offer(new ServerPendingWrite(channel, writeBuffer, onWriteFinished));
 					return;
 				}
 			}
@@ -85,13 +88,14 @@ public class ServerWriter implements Writer<ServerClient>
 			}
 			synchronized(pendingWrites)
 			{
-				pendingWrites.offerLast(new ServerPendingWrite(channel, writeBuffer, onWriteFinished));
+				pendingWrites.offer(new ServerPendingWrite(channel, writeBuffer, onWriteFinished));
 			}
 		} catch(IOException e)
 		{
 			Validator.handleRemoteHostCloseException(e, channel);
 		}
 	}
+
 	/**
 	 * Writes the specified writeBuffer into the specified channel.
 	 * Once a write has finished the specified onWriteFinished is invoked with the specified writeBuffer.
@@ -117,7 +121,7 @@ public class ServerWriter implements Writer<ServerClient>
 		synchronized(pendingWrites)
 		{
 			ServerPendingWrite pendingWrite;
-			while((pendingWrite = pendingWrites.pollFirst()) != null)
+			while((pendingWrite = pendingWrites.poll()) != null)
 			{
 				int currentSize = pendingWrites.size();
 				write(pendingWrite.client, pendingWrite.getWriteBuffer(), pendingWrite.getOnWriteFinished(), true);
@@ -125,7 +129,7 @@ public class ServerWriter implements Writer<ServerClient>
 				if(changed)
 				{
 					//if the size has changed it means that a write has failed to finish so you have to wait until you can write again
-					break;
+					return true;
 				}
 			}
 			return false;

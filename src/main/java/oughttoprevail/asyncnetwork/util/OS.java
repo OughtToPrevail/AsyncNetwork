@@ -20,10 +20,12 @@ public interface OS
 	static boolean isAndroid0()
 	{
 		boolean android;
-		try {
+		try
+		{
 			Class.forName("android.app.Application", false, ClassLoader.getSystemClassLoader());
 			android = true;
-		} catch (Throwable ignored) {
+		} catch(Throwable ignored)
+		{
 			// Failed to load the class uniquely available in Android.
 			android = false;
 		}

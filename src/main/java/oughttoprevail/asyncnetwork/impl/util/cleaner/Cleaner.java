@@ -17,7 +17,7 @@ package oughttoprevail.asyncnetwork.impl.util.cleaner;
 
 import java.nio.ByteBuffer;
 
-public interface Cleaner
+interface Cleaner
 {
 	void clean(ByteBuffer directByteBuffer);
 }

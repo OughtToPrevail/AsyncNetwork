@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Queue;
 
 import oughttoprevail.asyncnetwork.Channel;
@@ -29,7 +28,7 @@ import oughttoprevail.asyncnetwork.util.Consumer;
 
 public class Reader
 {
-	private final Deque<Request> pendingRequests;
+	private final Queue<Request> pendingRequests;
 	private final Channel<?> channel;
 	
 	public Reader(Channel<?> channel)
@@ -70,6 +69,26 @@ public class Reader
 	
 	private boolean callingRequests;
 	
+	private ByteBuffer slice(ByteBuffer byteBuffer, int bytes)
+	{
+		int currentLimit = byteBuffer.limit();
+		try
+		{
+			byteBuffer.limit(byteBuffer.position() + bytes);
+			return byteBuffer.slice();
+		} finally
+		{
+			byteBuffer.limit(currentLimit);
+		}
+	}
+	
+	private void accept(Consumer<ByteBuffer> consumer, ByteBuffer byteBuffer, int requestLength)
+	{
+		ByteBuffer sliced = slice(byteBuffer, requestLength);
+		byteBuffer.position(byteBuffer.position() + requestLength);
+		consumer.accept(sliced);
+	}
+	
 	/**
 	 * Invokes the pending requests with the specified {@link ByteBuffer}.
 	 *
@@ -89,17 +108,13 @@ public class Reader
 			do
 			{
 				int leftInBuffer = byteBuffer.remaining();
-				int requestLength = pendingRequests.peekFirst().getRequestLength();
+				int requestLength = pendingRequests.peek().getRequestLength();
 				if(leftInBuffer < requestLength)
 				{
 					break;
 				}
-				Request request = pendingRequests.pollFirst();
-				request.getRequest().accept(byteBuffer);
-				if(request.isAlways())
-				{
-					pendingRequests.offerLast(request);
-				}
+				Request request = pendingRequests.poll();
+				accept(request.getRequest(), byteBuffer, requestLength);
 			} while(!pendingRequests.isEmpty());
 			reset(byteBuffer);
 			callingRequests = false;
@@ -119,17 +134,15 @@ public class Reader
 	
 	/**
 	 * Invokes {@link Queue#offer(Object)} with a new request
-	 * created by {@link Request#Request(Consumer, int, boolean)}
+	 * created by {@link Request#Request(Consumer, int)}
 	 * then invokes {@link #callRequests(ByteBuffer)} with te specified readBuffer.
 	 *
 	 * @param readBuffer to call requests with
-	 * @param request the consumer that will be used when calling {@link Request#Request(Consumer, int, boolean)}
+	 * @param request the consumer that will be used when calling {@link Request#Request(Consumer, int)}
 	 * @param requestLength the requestLength that will be used when calling {@link
-	 * Request#Request(Consumer, int, boolean)}
-	 * @param always the always boolean that will be used when calling {@link
-	 * Request#Request(Consumer, int, boolean)}
+	 * Request#Request(Consumer, int)}
 	 */
-	public void addRequest(ByteBuffer readBuffer, Consumer<ByteBuffer> request, int requestLength, boolean always)
+	public void addRequest(ByteBuffer readBuffer, Consumer<ByteBuffer> request, int requestLength)
 	{
 		synchronized(pendingRequests)
 		{
@@ -140,23 +153,31 @@ public class Reader
 					readBuffer.flip();
 				}
 				int leftInBuffer = readBuffer.remaining();
+				boolean accepted = false;
 				if(leftInBuffer >= requestLength)
 				{
-					int limit = readBuffer.limit();
-					readBuffer.limit(readBuffer.position() + requestLength);
-					request.accept(readBuffer);
-					readBuffer.limit(limit);
-					if(!always)
+					boolean setCallingRequests = !callingRequests;
+					if(setCallingRequests)
 					{
-						return;
+						callingRequests = true;
 					}
+					accept(request, readBuffer, requestLength);
+					if(setCallingRequests)
+					{
+						callingRequests = false;
+					}
+					accepted = true;
 				}
 				if(!callingRequests)
 				{
 					reset(readBuffer);
 				}
+				if(accepted)
+				{
+					return;
+				}
 			}
-			pendingRequests.offerLast(new Request(request, requestLength, always));
+			pendingRequests.offer(new Request(request, requestLength));
 		}
 	}
 	
