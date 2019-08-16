@@ -18,13 +18,13 @@ package oughttoprevail.asyncnetwork.exceptions;
 import java.io.IOException;
 
 /**
- * Thrown when an exception occurs within {@link oughttoprevail.asyncnetwork.util.WindowsSelector}
+ * Thrown when an exception occurs within {@link oughttoprevail.asyncnetwork.util.selector.WindowsSelector}
  */
 public class WindowsIOException extends IOException
 {
 	/**
 	 * Constructs an {@link WindowsIOException} which is thrown when an exception
-	 * occurs within {@link oughttoprevail.asyncnetwork.util.WindowsSelector}.
+	 * occurs within {@link oughttoprevail.asyncnetwork.util.selector.WindowsSelector}.
 	 *
 	 * @param message the explanation of the exception
 	 */

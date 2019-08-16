@@ -17,6 +17,7 @@ package oughttoprevail.asyncnetwork;
 
 import java.util.concurrent.ExecutorService;
 
+import oughttoprevail.asyncnetwork.server.IndexedList;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
 public interface ServerManager

@@ -16,7 +16,7 @@ limitations under the License.
 package oughttoprevail.asyncnetwork.exceptions;
 
 /**
- * Thrown when the {@link oughttoprevail.asyncnetwork.util.WindowsSelector#select(int, long)} has failed
+ * Thrown when the {@link oughttoprevail.asyncnetwork.util.selector.WindowsSelector#select(int, long)} has failed
  * GetQueuedCompletionStatus with overlapped set (not null).
  */
 public class SelectException extends WindowsIOException
@@ -24,7 +24,7 @@ public class SelectException extends WindowsIOException
 	private final int index;
 	
 	/**
-	 * Constructs an {@link SelectException} which is thrown when {@link oughttoprevail.asyncnetwork.util.WindowsSelector#select(int, long)}
+	 * Constructs an {@link SelectException} which is thrown when {@link oughttoprevail.asyncnetwork.util.selector.WindowsSelector#select(int, long)}
 	 * has failed GetQueuedCompletionStatus with overlapped set (not null).
 	 *
 	 * @param message the explanation of the exception
