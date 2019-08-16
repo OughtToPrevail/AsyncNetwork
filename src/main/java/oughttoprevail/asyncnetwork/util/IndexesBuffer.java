@@ -15,22 +15,21 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork.util;
 
-import oughttoprevail.asyncnetwork.impl.util.IndexesBufferImpl;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
-/**
- * Implementation at {@link IndexesBufferImpl}.
- */
-public interface IndexesBuffer
+import oughttoprevail.asyncnetwork.pool.PooledByteBuffer;
+
+public class IndexesBuffer
 {
-	/**
-	 * Returns a new {@link IndexesBufferImpl} with the specified size.
-	 *
-	 * @param size the size requested for the {@link IndexesBuffer}
-	 * @return the new {@link IndexesBuffer}
-	 */
-	static IndexesBuffer newIndexesBuffer(int size)
+	private final PooledByteBuffer pooledByteBuffer;
+	private final ByteBuffer byteBuffer;
+	
+	public IndexesBuffer(int size)
 	{
-		return new IndexesBufferImpl(size);
+		this.pooledByteBuffer = new PooledByteBuffer(size);
+		this.byteBuffer = pooledByteBuffer.getByteBuffer();
+		byteBuffer.order(ByteOrder.nativeOrder());
 	}
 	
 	/**
@@ -38,22 +37,34 @@ public interface IndexesBuffer
 	 *
 	 * @return the next index
 	 */
-	int get();
+	public int get()
+	{
+		return byteBuffer.getInt();
+	}
 	
 	/**
 	 * Resets the position of the buffer to 0.
 	 */
-	void clear();
+	public void clear()
+	{
+		byteBuffer.clear();
+	}
 	
 	/**
 	 * Returns the address of the buffer.
 	 *
 	 * @return the address of the buffer
 	 */
-	long getAddress();
+	public long getAddress()
+	{
+		return pooledByteBuffer.address();
+	}
 	
 	/**
 	 * Closes the buffer.
 	 */
-	void close();
+	public void close()
+	{
+		pooledByteBuffer.close();
+	}
 }

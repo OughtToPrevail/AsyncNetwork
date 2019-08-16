@@ -15,13 +15,11 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork.exceptions;
 
-import java.io.IOException;
-
 /**
  * Thrown when the {@link oughttoprevail.asyncnetwork.util.WindowsSelector#select(int, long)} has failed
  * GetQueuedCompletionStatus with overlapped set (not null).
  */
-public class SelectException extends IOException
+public class SelectException extends WindowsIOException
 {
 	private final int index;
 	
@@ -30,7 +28,7 @@ public class SelectException extends IOException
 	 * has failed GetQueuedCompletionStatus with overlapped set (not null).
 	 *
 	 * @param message the explanation of the exception
-	 * @param index the index of the channel with the error
+	 * @param index the index of the socket with the error
 	 */
 	public SelectException(String message, int index)
 	{
@@ -39,9 +37,9 @@ public class SelectException extends IOException
 	}
 	
 	/**
-	 * Returns the index of the channel.
+	 * Returns the index of the socket.
 	 *
-	 * @return the index of the channel
+	 * @return the index of the socket
 	 */
 	public int getIndex()
 	{

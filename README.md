@@ -22,55 +22,29 @@ Here is <a href="https://search.maven.org/classic/#artifactdetails%7Ccom.github.
 ## How to use
 To create a client you would do:
 ```java
-		Client.newClient()
-				.onConnect(client -> WritablePacketBuilder.create()
-						.putByte(Byte.MAX_VALUE)
-						.build()
-						.writeAndClose(client))
-				.connectLocalHost(/*Specify your port here (0-65535) example: 6000*/6000);
+ClientSocket client = new ClientSocket();
+client.onConnect(() -> WritablePacketBuilder.create().putByte(Byte.MAX_VALUE).build().writeAndClose(client));
+client.connectLocalHost(/*Specify your port here (0-65535) example: 6000*/6000);
 ```
 To create a server you would do:
 ```java
 ReadablePacket packet = ReadablePacketBuilder.create().aByte().build();
-		Server.newServer().onConnection(client ->
-		{
-			packet.readAlways(client, readResult ->
-			{
-				byte value = readResult.poll();
-				System.out.println("VALUE " + value);
-			});
-			client.onDisconnect(disconnectionType -> System.out.println("Disconnected" + disconnectionType));
-		}).bindLocalHost(6000);
+ServerSocket server = new ServerSocket();
+server.onConnection(client ->
+{
+	client.always(true);
+	packet.read(client, readResult ->
+	{
+		byte value = readResult.poll();
+		System.out.println("VALUE " + value);
+	});
+	client.onDisconnect(disconnectionType -> System.out.println("Disconnected" + disconnectionType));
+});
+server.bindLocalHost(6000);
+while(true);
 ```
 
 And you're finished! now you can use AsyncNetwork for your networking projects. Good luck!
-
-## Performance
-These tests will be done using iperf and will test AsyncNetwork against a popular
-network library named "Netty". (Tests were done on Windows)
-### Code
-AsyncNetwork: https://sourceb.in/d948ac3d2a.java
-<br/>
-Netty: https://sourceb.in/e5f5a3442b.java
-<br/>
-Test commands:
-<br/>
-Test 1: `iperf -c ip -p port -f M` - Will run a single client and 
-return the bandwidth in MB/s.
-<br/>
-Test 2: `iperf -c ip -p port -f M -P 100` - Will run 100 parallel clients 
-and return the SUM (all bandwidths from all clients together) in MB/s.
-### Results
-#### AsyncNetwork
-Test 1: 184 MB/s
-<br/>
-Test 2: 162 MB/s
-
-#### Netty
-Test 1: 187 MB/s
-<br/>
-Test 2: 117 MB/s
-
 
 ## Server selector
 ### Windows

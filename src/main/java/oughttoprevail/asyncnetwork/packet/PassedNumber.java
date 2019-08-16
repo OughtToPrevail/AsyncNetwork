@@ -17,6 +17,8 @@ package oughttoprevail.asyncnetwork.packet;
 
 import java.nio.ByteBuffer;
 
+import oughttoprevail.asyncnetwork.util.Util;
+
 public interface PassedNumber<T extends Number>
 {
 	/**
@@ -33,4 +35,75 @@ public interface PassedNumber<T extends Number>
 	 * @return the size in bytes of the number returned from {@link PassedNumber}
 	 */
 	int getSize();
+	
+	PassedNumber<Byte> PASSABLE_BYTE = new PassedNumber<Byte>()
+	{
+		@Override
+		public Byte get(ByteBuffer byteBuffer)
+		{
+			return byteBuffer.get();
+		}
+		
+		@Override
+		public int getSize()
+		{
+			return Util.BYTE_BYTES;
+		}
+	};
+	PassedNumber<Short> PASSABLE_UNSIGNED_BYTE = new PassedNumber<Short>()
+	{
+		@Override
+		public Short get(ByteBuffer byteBuffer)
+		{
+			return Util.toUnsignedShort(byteBuffer.get());
+		}
+		
+		@Override
+		public int getSize()
+		{
+			return Util.BYTE_BYTES;
+		}
+	};
+	PassedNumber<Short> PASSABLE_SHORT = new PassedNumber<Short>()
+	{
+		@Override
+		public Short get(ByteBuffer byteBuffer)
+		{
+			return byteBuffer.getShort();
+		}
+		
+		@Override
+		public int getSize()
+		{
+			return Util.SHORT_BYTES;
+		}
+	};
+	PassedNumber<Integer> PASSABLE_UNSIGNED_SHORT = new PassedNumber<Integer>()
+	{
+		@Override
+		public Integer get(ByteBuffer byteBuffer)
+		{
+			return Util.toUnsignedInt(byteBuffer.getShort());
+		}
+		
+		@Override
+		public int getSize()
+		{
+			return Util.SHORT_BYTES;
+		}
+	};
+	PassedNumber<Integer> PASSABLE_INTEGER = new PassedNumber<Integer>()
+	{
+		@Override
+		public Integer get(ByteBuffer byteBuffer)
+		{
+			return byteBuffer.getInt();
+		}
+		
+		@Override
+		public int getSize()
+		{
+			return Util.INT_BYTES;
+		}
+	};
 }

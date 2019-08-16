@@ -15,14 +15,15 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork.exceptions;
 
-import oughttoprevail.asyncnetwork.impl.util.UnsafeGetter;
-import oughttoprevail.asyncnetwork.util.LinuxMacSelector;
+import oughttoprevail.asyncnetwork.util.UnsafeGetter;
+import oughttoprevail.asyncnetwork.util.selector.LinuxMacSelector;
+import oughttoprevail.asyncnetwork.util.selector.WindowsSelector;
 
 /**
- * Thrown when trying to use a not loaded {@link LinuxMacSelector} or when {@link UnsafeGetter}
+ * Thrown when trying to use a not loaded {@link LinuxMacSelector} or {@link WindowsSelector} or when {@link UnsafeGetter}
  * fails to get Unsafe.
  */
-public class LoadException extends Exception
+public class LoadException extends RuntimeException
 {
 	/**
 	 * Constructs an {@link LoadException} which is thrown when the NativeLoader has failed.

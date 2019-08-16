@@ -17,6 +17,8 @@ package oughttoprevail.asyncnetwork.packet;
 
 import java.nio.ByteBuffer;
 
+import oughttoprevail.asyncnetwork.util.Util;
+
 /**
  * A serializer and deserializer that puts an {@link Object} into a {@link ByteBuffer} and
  * reverses the {@link ByteBuffer} into the same {@link Object}.
@@ -28,17 +30,35 @@ import java.nio.ByteBuffer;
 public interface SerDes<T>
 {
 	/**
-	 * Serializes the specified object into a byte[] using the specified serializable.
+	 * Serializes the specified t into the specified byteBuffer using the specified serializable.
 	 *
-	 * @param object to serialize
+	 * @param t to serialize
+	 * @param serializable which will serialize the specified object
+	 * @param <T> type of specified object
+	 */
+	static <T> void serialize(T t, SerDes<T> serializable, ByteBuffer byteBuffer)
+	{
+		int serializedLength = serializable.getSerializedLength(t);
+		if(!serializable.isFixedLength())
+		{
+			byteBuffer.putInt(serializedLength);
+		}
+		serializable.serialize(t, byteBuffer);
+	}
+	
+	/**
+	 * Serializes the specified t into a byte[] using the specified serializable.
+	 *
+	 * @param t to serialize
 	 * @param serializable which will serialize the specified object
 	 * @param <T> type of specified object
 	 * @return the specified object after serialization made by the specified serializable
 	 */
-	static <T> byte[] serializeToBytes(T object, SerDes<T> serializable)
+	static <T> byte[] serializeToBytes(T t, SerDes<T> serializable)
 	{
-		ByteBuffer byteBuffer = ByteBuffer.allocate(serializable.getSerializedLength(object));
-		serializable.serialize(object, byteBuffer);
+		int serializedLength = serializable.getSerializedLength(t);
+		ByteBuffer byteBuffer = ByteBuffer.allocate(serializable.isFixedLength() ? serializedLength : serializedLength + Util.INT_BYTES);
+		SerDes.serialize(t, serializable, byteBuffer);
 		return byteBuffer.array();
 	}
 	
@@ -63,9 +83,10 @@ public interface SerDes<T>
 	 * Deserializes the specified serialized into the specified T.
 	 *
 	 * @param serialized to deserialize
+	 * @param serializedLength is the length of the serialized object
 	 * @return T after deserialization from the specified serialized
 	 */
-	T deserialize(ByteBuffer serialized);
+	T deserialize(ByteBuffer serialized, int serializedLength);
 	
 	/**
 	 * Returns whether this {@link SerDes} has a fixed length.

@@ -15,8 +15,8 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork.exceptions;
 
-import oughttoprevail.asyncnetwork.IServer;
-import oughttoprevail.asyncnetwork.util.LinuxMacSelector;
+import oughttoprevail.asyncnetwork.server.ServerSocket;
+import oughttoprevail.asyncnetwork.util.selector.LinuxMacSelector;
 
 /**
  * Thrown when {@link LinuxMacSelector#close()} returns true which is returned when {@link
@@ -25,7 +25,7 @@ import oughttoprevail.asyncnetwork.util.LinuxMacSelector;
 public class SelectorFailedCloseException extends IllegalArgumentException
 {
 	/**
-	 * Constructs an {@link SelectorFailedCloseException} which is thrown when {@link IServer#close()} tries to {@link AutoCloseable#close()}
+	 * Constructs an {@link SelectorFailedCloseException} which is thrown when {@link ServerSocket#close()} tries to {@link AutoCloseable#close()}
 	 * on the selector and fails due to an {@link java.io.IOException}.
 	 *
 	 * @param throwable the {@link java.io.IOException} thrown by {@link AutoCloseable#close()}

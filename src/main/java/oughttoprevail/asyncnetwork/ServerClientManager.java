@@ -15,70 +15,78 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork;
 
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 
-/**
- * Implementation at {@link oughttoprevail.asyncnetwork.impl.server.ServerClientManagerImpl}.
- *
- * @param <S> the server owning the server client
- */
-public interface ServerClientManager<S extends IServer> extends ChannelManager
+import oughttoprevail.asyncnetwork.pool.PooledByteBuffer;
+import oughttoprevail.asyncnetwork.server.ServerClientSocket;
+import oughttoprevail.asyncnetwork.server.ServerSocket;
+import oughttoprevail.asyncnetwork.util.SelectorImplementation;
+
+public abstract class ServerClientManager extends SocketManager
 {
+	public ServerClientManager(Socket socket, PooledByteBuffer readByteBuffer)
+	{
+		super(socket, readByteBuffer);
+	}
+	
+	public abstract ServerSocket getServer();
+	
+	public abstract boolean callWrite();
+	
+	public abstract void callRequests();
+	
 	/**
-	 * Returns the owning server.
-	 *
-	 * @return the owning server
+	 * File descriptor of the owning {@link ServerClientSocket}.
 	 */
-	S getServer();
+	private int fd;
 	
 	/**
 	 * Sets the file descriptor of the serverClient socket.
 	 *
 	 * @param fd the file descriptor of the serverClient socket
 	 */
-	void setFD(int fd);
+	public void setFD(int fd)
+	{
+		this.fd = fd;
+	}
 	
 	/**
 	 * Returns the file descriptor of the serverClient socket.
 	 *
 	 * @return the file descriptor of the serverClient socket
 	 */
-	int getFD();
+	public int getFD()
+	{
+		return fd;
+	}
 	
 	/**
-	 * Invokes pending read requests with the remaining in the channel's read {@link
-	 * ByteBuffer}.
+	 * {@link SelectionKey} of the owning {@link ServerClientSocket}.
+	 * This will only be used if the {@link SelectorImplementation}
+	 * is {@link SelectorImplementation#JAVA}.
+	 * This is used for the {@link ServerClientSocket} to know
+	 * how to ask the selector to notify itself when writing: It is done by using
+	 * {@link SelectionKey#interestOps(int)}.
 	 */
-	void callRequests();
-	
-	/**
-	 * Reads from the socket into the channel's read {@link ByteBuffer} then invokes the
-	 * pending read requests.
-	 */
-	void callRead();
-	
-	/**
-	 * Writes the channel's {@link ByteBuffer} to the socket.
-	 *
-	 * @return true if it needs to write more, false if an exception occurred or it has written the
-	 * whole {@link ByteBuffer}
-	 */
-	boolean callWrite();
-	
-	// Java selector methods
+	private SelectionKey selectionKey;
 	
 	/**
 	 * Sets the {@link SelectionKey} of {@code selectionKey} to the specified {@code selectionKey}.
 	 *
 	 * @param selectionKey the value that {@code selectionKey} will be set to
 	 */
-	void setSelectionKey(SelectionKey selectionKey);
+	public void setSelectionKey(SelectionKey selectionKey)
+	{
+		this.selectionKey = selectionKey;
+	}
 	
 	/**
-	 * Returns the channel's selection key or null if it was never set.
+	 * Returns the socket's selection key or null if it was never set.
 	 *
-	 * @return the channel's selection key or null if it was never set
+	 * @return the socket's selection key or null if it was never set
 	 */
-	SelectionKey getSelectionKey();
+	public SelectionKey getSelectionKey()
+	{
+		return selectionKey;
+	}
 }

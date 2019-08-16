@@ -85,11 +85,7 @@ public class ExcludedList<E> implements Collection<E>
 	@Override
 	public boolean contains(Object o)
 	{
-		if(isExcludedElement(o))
-		{
-			return false;
-		}
-		return collection.contains(o);
+		return !isExcludedElement(o) && collection.contains(o);
 	}
 	
 	/**
@@ -158,12 +154,12 @@ public class ExcludedList<E> implements Collection<E>
 	 * are returned by its iterator, this method must return the elements in
 	 * the same order.
 	 *
-	 * <p>The returned array will be "safe" in that no references to it are
+	 * The returned array will be "safe" in that no references to it are
 	 * maintained by this collection.  (In other words, this method must
 	 * allocate a new array even if this collection is backed by an array).
 	 * The caller is thus free to modify the returned array.
 	 *
-	 * <p>This method acts as bridge between array-based and collection-based
+	 * This method acts as bridge between array-based and collection-based
 	 * APIs.
 	 *
 	 * @return an array containing all of the elements in this collection
@@ -181,29 +177,29 @@ public class ExcludedList<E> implements Collection<E>
 	 * Otherwise, a new array is allocated with the runtime type of the
 	 * specified array and the size of this collection.
 	 *
-	 * <p>If this collection fits in the specified array with room to spare
+	 * If this collection fits in the specified array with room to spare
 	 * (i.e., the array has more elements than this collection), the element
 	 * in the array immediately following the end of the collection is set to
 	 * <tt>null</tt>.  (This is useful in determining the length of this
 	 * collection <i>only</i> if the caller knows that this collection does
 	 * not contain any <tt>null</tt> elements.)
 	 *
-	 * <p>If this collection makes any guarantees as to what order its elements
+	 * If this collection makes any guarantees as to what order its elements
 	 * are returned by its iterator, this method must return the elements in
 	 * the same order.
 	 *
-	 * <p>Like the {@link #toArray()} method, this method acts as bridge between
+	 * Like the {@link #toArray()} method, this method acts as bridge between
 	 * array-based and collection-based APIs.  Further, this method allows
 	 * precise control over the runtime type of the output array, and may,
 	 * under certain circumstances, be used to save allocation costs.
 	 *
-	 * <p>Suppose <tt>x</tt> is a collection known to contain only strings.
+	 * Suppose <tt>x</tt> is a collection known to contain only strings.
 	 * The following code can be used to dump the collection into a newly
 	 * allocated array of <tt>String</tt>:
 	 *
 	 * <pre>
 	 *     String[] y = x.toArray(new String[0]);</pre>
-	 * <p>
+	 *
 	 * Note that <tt>toArray(new Object[0])</tt> is identical in function to
 	 * <tt>toArray()</tt>.
 	 *
@@ -226,15 +222,15 @@ public class ExcludedList<E> implements Collection<E>
 	 * Ensures that this collection contains the specified element (optional
 	 * operation).  Returns <tt>true</tt> if this collection changed as a
 	 * result of the call.  (Returns <tt>false</tt> if this collection does
-	 * not permit duplicates and already contains the specified element.)<p>
-	 * <p>
+	 * not permit duplicates and already contains the specified element.)
+	 *
 	 * Collections that support this operation may place limitations on what
 	 * elements may be added to this collection.  In particular, some
 	 * collections will refuse to add <tt>null</tt> elements, and others will
 	 * impose restrictions on the type of elements that may be added.
 	 * Collection classes should clearly specify in their documentation any
-	 * restrictions on what elements may be added.<p>
-	 * <p>
+	 * restrictions on what elements may be added.
+	 *
 	 * If a collection refuses to add a particular element for any reason
 	 * other than that it already contains the element, it <i>must</i> throw
 	 * an exception (rather than returning <tt>false</tt>).  This preserves
@@ -284,11 +280,7 @@ public class ExcludedList<E> implements Collection<E>
 	@Override
 	public boolean remove(Object o)
 	{
-		if(isExcludedElement(o))
-		{
-			return false;
-		}
-		return collection.remove(o);
+		return !isExcludedElement(o) && collection.remove(o);
 	}
 	
 	/**
@@ -310,7 +302,7 @@ public class ExcludedList<E> implements Collection<E>
 	 * @see #contains(Object)
 	 */
 	@Override
-	public boolean containsAll(Collection<?> c)
+	public boolean containsAll(Collection c)
 	{
 		return collection.containsAll(c);
 	}
@@ -369,7 +361,7 @@ public class ExcludedList<E> implements Collection<E>
 	 * @see #contains(Object)
 	 */
 	@Override
-	public boolean removeAll(Collection<?> c)
+	public boolean removeAll(Collection c)
 	{
 		return collection.removeAll(c);
 	}
@@ -397,7 +389,7 @@ public class ExcludedList<E> implements Collection<E>
 	 * @see #contains(Object)
 	 */
 	@Override
-	public boolean retainAll(Collection<?> c)
+	public boolean retainAll(Collection c)
 	{
 		return collection.retainAll(c);
 	}

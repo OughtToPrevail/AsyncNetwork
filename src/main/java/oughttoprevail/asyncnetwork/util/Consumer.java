@@ -1,7 +1,5 @@
 package oughttoprevail.asyncnetwork.util;
 
-import java.util.Objects;
-
 /**
  * Copy of {@link java.util.function.Consumer}.
  * This is for Android since it doesn't support {@link java.util.function.Consumer} until API level 24+.
@@ -31,7 +29,7 @@ public interface Consumer<T>
 	 */
 	default Consumer<T> andThen(Consumer<? super T> after)
 	{
-		Objects.requireNonNull(after);
+		Validator.requireNonNull(after);
 		return (T t) ->
 		{
 			accept(t);

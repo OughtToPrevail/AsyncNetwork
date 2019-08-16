@@ -15,21 +15,42 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork.packet;
 
-import oughttoprevail.asyncnetwork.Channel;
-import oughttoprevail.asyncnetwork.impl.packet.OpcodePacketBuilderImpl;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import oughttoprevail.asyncnetwork.Socket;
+import oughttoprevail.asyncnetwork.util.Validator;
 import oughttoprevail.asyncnetwork.util.BiConsumer;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-public interface OpcodePacketBuilder
+public class OpcodePacketBuilder
 {
-	static OpcodePacketBuilder create()
+	public static OpcodePacketBuilder create()
 	{
-		return new OpcodePacketBuilderImpl();
+		return new OpcodePacketBuilder();
 	}
 	
-	static OpcodePacketBuilder create(PassedNumber<?> passedNumber)
+	public static OpcodePacketBuilder create(PassedNumber passedNumber)
 	{
-		return new OpcodePacketBuilderImpl(passedNumber);
+		return new OpcodePacketBuilder(passedNumber);
+	}
+	
+	private final PassedNumber passedNumber;
+	private final Map<Integer, RegisteredPacket> registeredPackets;
+	private final List<BiConsumer<Socket, Integer>> onInvalidOpcode = new ArrayList<>();
+	
+	public OpcodePacketBuilder()
+	{
+		this(PassedNumber.PASSABLE_UNSIGNED_BYTE);
+	}
+	
+	public OpcodePacketBuilder(PassedNumber passedNumber)
+	{
+		Validator.requireNonNull(passedNumber, "PassedNumber");
+		this.passedNumber = passedNumber;
+		registeredPackets = new HashMap<>();
 	}
 	
 	/**
@@ -41,21 +62,74 @@ public interface OpcodePacketBuilder
 	 * @param readResultConsumer to invoke once a read has successfully completed
 	 * @return this
 	 */
-	OpcodePacketBuilder register(int opcode, ReadablePacket packet, Consumer<ReadResult> readResultConsumer);
+	public OpcodePacketBuilder register(int opcode, ReadablePacket packet, Consumer<ReadResult> readResultConsumer)
+	{
+		ensureValidOpcode(opcode);
+		Validator.requireNonNull(packet, "Packet");
+		Validator.requireNonNull(readResultConsumer, "ReadResultConsumer");
+		if(registeredPackets.containsKey(opcode))
+		{
+			throw new IllegalArgumentException("A packet with the specified opcode (Specified opcode: " + opcode + ") already exists!");
+		}
+		registeredPackets.put(opcode, new RegisteredPacket(packet, readResultConsumer));
+		return this;
+	}
 	
 	/**
 	 * Invokes the specified onInvalidOpcode when an invalid opcode (a non-registered opcode) is
-	 * received in a {@link OpcodePacket#listen(Channel, boolean)} operation.
+	 * received in a {@link OpcodePacket#listen(Socket, boolean)} operation.
 	 *
 	 * @param onInvalidOpcode to invoke when an invalid opcode is received
 	 * @return this
 	 */
-	OpcodePacketBuilder onInvalidOpcode(BiConsumer<Channel<?>, Integer> onInvalidOpcode);
+	public OpcodePacketBuilder onInvalidOpcode(BiConsumer<Socket, Integer> onInvalidOpcode)
+	{
+		this.onInvalidOpcode.add(onInvalidOpcode);
+		return this;
+	}
+	
+	private void throwOpcodeException(int largerThan)
+	{
+		throw new IllegalArgumentException("Opcode cannot be larger than " + largerThan);
+	}
+	
+	private static final int MAX_BYTES = Math.abs(Byte.MAX_VALUE - Byte.MIN_VALUE);
+	private static final int MAX_SHORT = Math.abs(Short.MAX_VALUE - Short.MIN_VALUE);
+	
+	private void ensureValidOpcode(int opcode)
+	{
+		int size = passedNumber.getSize();
+		switch(size)
+		{
+			//byte
+			case 1:
+			{
+				if(opcode > MAX_BYTES)
+				{
+					throwOpcodeException(MAX_BYTES);
+				}
+				break;
+			}
+			
+			//short
+			case 2:
+			{
+				if(opcode > MAX_SHORT)
+				{
+					throwOpcodeException(MAX_SHORT);
+				}
+				break;
+			}
+		}
+	}
 	
 	/**
 	 * Returns a new {@link OpcodePacket} based on the entered parameters.
 	 *
 	 * @return a new {@link OpcodePacket} based on the entered parameters
 	 */
-	OpcodePacket build();
+	public OpcodePacket build()
+	{
+		return new OpcodePacket(registeredPackets, passedNumber, onInvalidOpcode);
+	}
 }

@@ -40,7 +40,7 @@ public interface Predicate<T>
 	 * predicate, if this predicate is {@code false}, then the {@code other}
 	 * predicate is not evaluated.
 	 *
-	 * <p>Any exceptions thrown during evaluation of either predicate are relayed
+	 * Any exceptions thrown during evaluation of either predicate are relayed
 	 * to the caller; if evaluation of this predicate throws an exception, the
 	 * {@code other} predicate will not be evaluated.
 	 *
@@ -50,9 +50,9 @@ public interface Predicate<T>
 	 * AND of this predicate and the {@code other} predicate
 	 * @throws NullPointerException if other is null
 	 */
-	default java.util.function.Predicate<T> and(java.util.function.Predicate<? super T> other)
+	default Predicate<T> and(Predicate<? super T> other)
 	{
-		Objects.requireNonNull(other);
+		Validator.requireNonNull(other);
 		return (t) -> test(t) && other.test(t);
 	}
 	
@@ -63,7 +63,7 @@ public interface Predicate<T>
 	 * @return a predicate that represents the logical negation of this
 	 * predicate
 	 */
-	default java.util.function.Predicate<T> negate()
+	default Predicate<T> negate()
 	{
 		return (t) -> !test(t);
 	}
@@ -74,7 +74,7 @@ public interface Predicate<T>
 	 * predicate, if this predicate is {@code true}, then the {@code other}
 	 * predicate is not evaluated.
 	 *
-	 * <p>Any exceptions thrown during evaluation of either predicate are relayed
+	 * Any exceptions thrown during evaluation of either predicate are relayed
 	 * to the caller; if evaluation of this predicate throws an exception, the
 	 * {@code other} predicate will not be evaluated.
 	 *
@@ -84,9 +84,9 @@ public interface Predicate<T>
 	 * OR of this predicate and the {@code other} predicate
 	 * @throws NullPointerException if other is null
 	 */
-	default java.util.function.Predicate<T> or(java.util.function.Predicate<? super T> other)
+	default Predicate<T> or(Predicate<? super T> other)
 	{
-		Objects.requireNonNull(other);
+		Validator.requireNonNull(other);
 		return (t) -> test(t) || other.test(t);
 	}
 	
@@ -100,8 +100,8 @@ public interface Predicate<T>
 	 * @return a predicate that tests if two arguments are equal according
 	 * to {@link Objects#equals(Object, Object)}
 	 */
-	static <T> java.util.function.Predicate<T> isEqual(Object targetRef)
+	static <T> Predicate<T> isEqual(Object targetRef)
 	{
-		return (null == targetRef) ? Objects::isNull : object -> targetRef.equals(object);
+		return (null == targetRef) ? object -> object == null : object -> targetRef.equals(object);
 	}
 }

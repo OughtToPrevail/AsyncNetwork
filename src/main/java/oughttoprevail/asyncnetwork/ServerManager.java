@@ -15,28 +15,26 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork;
 
-import oughttoprevail.asyncnetwork.util.Consumer;
-import oughttoprevail.asyncnetwork.util.IndexedList;
+import java.util.concurrent.ExecutorService;
 
-/**
- * Implementation at {@link oughttoprevail.asyncnetwork.impl.server.ServerClientManagerImpl}.
- */
+import oughttoprevail.asyncnetwork.util.Consumer;
+
 public interface ServerManager
 {
 	/**
-	 * Closes the channel and invokes {@link Channel#onDisconnect(Consumer)} specified consumer with the
-	 * specified disconnectionType.
+	 * Closes the socket and invokes {@link Socket#onDisconnect(Consumer)} specified consumer with the
+	 * specified closeType.
 	 *
-	 * @param disconnectionType the disconnectionType that will be used when calling the {@link
-	 * Channel#onDisconnect(Consumer)} specified consumer
+	 * @param closeType the closeType that will be used when calling the {@link
+	 * Socket#onDisconnect(Consumer)} specified consumer
 	 */
-	void close(DisconnectionType disconnectionType);
+	void close(CloseType closeType);
 	
 	/**
-	 * Invokes the channel's {@link Channel#onException(Consumer)} consumer with the specified
+	 * Invokes the socket's {@link Socket#onException(Consumer)} consumer with the specified
 	 * exception.
 	 *
-	 * @param throwable the exception that the channel's {@link Channel#onException(Consumer)}
+	 * @param throwable the exception that the socket's {@link Socket#onException(Consumer)}
 	 * consumer will be called with
 	 */
 	void exception(Throwable throwable);
@@ -47,6 +45,13 @@ public interface ServerManager
 	 * @return the server selector
 	 */
 	Object getSelector();
+	
+	/**
+	 * Returns the {@link ExecutorService} this server is using.
+	 *
+	 * @return the {@link ExecutorService} this server is using
+	 */
+	ExecutorService getExecutorService();
 	
 	/**
 	 * Returns whether this is a windows implementation server.

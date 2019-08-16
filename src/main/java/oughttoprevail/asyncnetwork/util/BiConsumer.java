@@ -15,8 +15,6 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork.util;
 
-import java.util.Objects;
-
 /**
  * Copy of {@link java.util.function.BiConsumer}.
  * This is for Android since it doesn't support {@link java.util.function.BiConsumer} until API level 24+.
@@ -47,7 +45,7 @@ public interface BiConsumer<T, U>
 	 */
 	default BiConsumer<T, U> andThen(BiConsumer<? super T, ? super U> after)
 	{
-		Objects.requireNonNull(after);
+		Validator.requireNonNull(after);
 		
 		return (l, r) ->
 		{

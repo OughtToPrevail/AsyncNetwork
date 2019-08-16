@@ -17,13 +17,18 @@ package oughttoprevail.asyncnetwork.packet;
 
 import java.util.Queue;
 
-import oughttoprevail.asyncnetwork.Channel;
+import oughttoprevail.asyncnetwork.Socket;
 
 /**
- * Implementation at {@link oughttoprevail.asyncnetwork.impl.packet.ReadResultImpl}
+ * Implementation at {@link oughttoprevail.asyncnetwork.packet.ReadResultImpl}
  */
 public interface ReadResult
 {
+	static void throwEnsureHasNext() throws IllegalStateException
+	{
+		throw new IllegalStateException("No more results available!");
+	}
+	
 	/**
 	 * Returns {@link #pollFirst()}.
 	 *
@@ -118,12 +123,12 @@ public interface ReadResult
 	 *
 	 * @return how much entries are available in this {@link Queue}
 	 */
-	int left();
+	int available();
 	
 	/**
-	 * Returns the channel who obtained this {@link ReadResult}.
+	 * Returns the socket who obtained this {@link ReadResult}.
 	 *
-	 * @return the channel who obtained this {@link ReadResult}
+	 * @return the socket who obtained this {@link ReadResult}
 	 */
-	Channel<?> channel();
+	Socket socket();
 }
