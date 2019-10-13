@@ -289,7 +289,6 @@ public class ReadablePacketBuilder
 	 */
 	private <E extends Enum<E>> ReadablePacketBuilder aEnum(Function<ByteBuffer, Integer> consumer, int bytes, Class<E> cls)
 	{
-		System.out.println("Read enum: " + bytes);
 		return offerByteBuffer((byteBuffer, readResult) ->
 		{
 			E[] enumConstants = cls.getEnumConstants();
@@ -299,7 +298,6 @@ public class ReadablePacketBuilder
 				return;
 			}
 			int aInt = consumer.apply(byteBuffer);
-			System.out.println("A enum: " + aInt);
 			if(aInt > enumConstants.length || aInt < 0)
 			{
 				readResult.socket().manager().exception(new IllegalArgumentException("Received illegal enum number: " + aInt + "!"));

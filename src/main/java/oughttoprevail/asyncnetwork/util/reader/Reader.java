@@ -19,14 +19,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Deque;
 import java.util.Queue;
 
 import oughttoprevail.asyncnetwork.Socket;
-import oughttoprevail.asyncnetwork.util.Validator;
 import oughttoprevail.asyncnetwork.util.DisconnectionType;
 import oughttoprevail.asyncnetwork.util.Predicate;
+import oughttoprevail.asyncnetwork.util.Validator;
 
 public class Reader
 {
@@ -118,7 +117,6 @@ public class Reader
 			byte[] bytes = new byte[byteBuffer.flip().limit()];
 			byteBuffer.get(bytes);
 			byteBuffer.limit(byteBuffer.capacity());
-			System.out.println("Call requests " + pendingRequests + " " + byteBuffer.position() + " " + Arrays.toString(bytes));
 			if(pendingRequests.isEmpty() || byteBuffer.position() == 0)
 			{
 				return;
@@ -136,7 +134,6 @@ public class Reader
 					{
 						break;
 					}
-					System.out.println("Test in callRequests " + leftInBuffer);
 					if(!test(request.getRequest(), byteBuffer, requestLength))
 					{
 						pendingRequests.pollLast();

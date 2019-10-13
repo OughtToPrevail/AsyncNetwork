@@ -128,7 +128,6 @@ public class WindowsSelectorFlags
 					PooledByteBuffer pooledReadBuffer = client.manager().getReadByteBuffer();
 					ByteBuffer readBuffer = pooledReadBuffer.getByteBuffer();
 					readBuffer.position(readBuffer.position() + totalBytes);
-					System.out.println("total bytes: " + totalBytes);
 					client.manager().callRequests();
 					if(!client.isClosed())
 					{

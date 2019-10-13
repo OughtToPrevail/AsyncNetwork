@@ -57,7 +57,6 @@ public class OpcodePacket<E extends Enum<E>>
 		{
 			int opcode = passedNumber.apply(byteBuffer).intValue();
 			RegisteredPacket<E> packet = registeredPackets.get(opcode);
-			System.out.println("Opcode: " + opcode + " " + packet + " " + permissionHandler);
 			if(packet == null)
 			{
 				for(BiConsumer<Socket, Integer> invalidOpcodeConsumer : onInvalidOpcode)

@@ -76,7 +76,6 @@ public class WritablePacketBuilder
 	 */
 	public WritablePacketBuilder putByte(int b)
 	{
-		System.out.println("Put byte: " + b);
 		return enqueue(byteBuffer -> byteBuffer.put((byte) b), Util.BYTE_BYTES);
 	}
 	
