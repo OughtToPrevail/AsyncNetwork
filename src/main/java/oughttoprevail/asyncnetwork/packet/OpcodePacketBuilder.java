@@ -21,25 +21,26 @@ import java.util.List;
 import java.util.Map;
 
 import oughttoprevail.asyncnetwork.Socket;
-import oughttoprevail.asyncnetwork.util.Validator;
 import oughttoprevail.asyncnetwork.util.BiConsumer;
 import oughttoprevail.asyncnetwork.util.Consumer;
+import oughttoprevail.asyncnetwork.util.Validator;
 
-public class OpcodePacketBuilder
+public class OpcodePacketBuilder<E extends Enum<E>>
 {
-	public static OpcodePacketBuilder create()
+	public static <E extends Enum<E>> OpcodePacketBuilder<E> create()
 	{
-		return new OpcodePacketBuilder();
+		return new OpcodePacketBuilder<>();
 	}
 	
-	public static OpcodePacketBuilder create(PassedNumber passedNumber)
+	public static <E extends Enum<E>> OpcodePacketBuilder<E> create(PassedNumber passedNumber)
 	{
-		return new OpcodePacketBuilder(passedNumber);
+		return new OpcodePacketBuilder<>(passedNumber);
 	}
 	
 	private final PassedNumber passedNumber;
-	private final Map<Integer, RegisteredPacket> registeredPackets;
+	private final Map<Integer, RegisteredPacket<E>> registeredPackets;
 	private final List<BiConsumer<Socket, Integer>> onInvalidOpcode = new ArrayList<>();
+	private PermissionHandler<E> permissionHandler;
 	
 	public OpcodePacketBuilder()
 	{
@@ -62,7 +63,7 @@ public class OpcodePacketBuilder
 	 * @param readResultConsumer to invoke once a read has successfully completed
 	 * @return this
 	 */
-	public OpcodePacketBuilder register(int opcode, ReadablePacket packet, Consumer<ReadResult> readResultConsumer)
+	public OpcodePacketBuilder<E> register(int opcode, ReadablePacket packet, Consumer<ReadResult> readResultConsumer)
 	{
 		ensureValidOpcode(opcode);
 		Validator.requireNonNull(packet, "Packet");
@@ -71,8 +72,16 @@ public class OpcodePacketBuilder
 		{
 			throw new IllegalArgumentException("A packet with the specified opcode (Specified opcode: " + opcode + ") already exists!");
 		}
-		registeredPackets.put(opcode, new RegisteredPacket(packet, readResultConsumer));
+		registeredPackets.put(opcode, new RegisteredPacket<>(packet, readResultConsumer));
 		return this;
+	}
+	
+	/**
+	 * Invokes {@link #register(int, ReadablePacket, Consumer)} with the int parameter being the specified enum {@link Enum#ordinal()}.
+	 */
+	public OpcodePacketBuilder<E> register(Enum e, ReadablePacket packet, Consumer<ReadResult> readResultConsumer)
+	{
+		return register(e.ordinal(), packet, readResultConsumer);
 	}
 	
 	/**
@@ -82,9 +91,15 @@ public class OpcodePacketBuilder
 	 * @param onInvalidOpcode to invoke when an invalid opcode is received
 	 * @return this
 	 */
-	public OpcodePacketBuilder onInvalidOpcode(BiConsumer<Socket, Integer> onInvalidOpcode)
+	public OpcodePacketBuilder<E> onInvalidOpcode(BiConsumer<Socket, Integer> onInvalidOpcode)
 	{
 		this.onInvalidOpcode.add(onInvalidOpcode);
+		return this;
+	}
+	
+	public OpcodePacketBuilder<E> permissionHandler(PermissionHandler<E> permissionHandler)
+	{
+		this.permissionHandler = permissionHandler;
 		return this;
 	}
 	
@@ -128,8 +143,8 @@ public class OpcodePacketBuilder
 	 *
 	 * @return a new {@link OpcodePacket} based on the entered parameters
 	 */
-	public OpcodePacket build()
+	public OpcodePacket<E> build()
 	{
-		return new OpcodePacket(registeredPackets, passedNumber, onInvalidOpcode);
+		return new OpcodePacket<>(registeredPackets, passedNumber, onInvalidOpcode, permissionHandler);
 	}
 }

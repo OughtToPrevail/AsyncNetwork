@@ -18,13 +18,12 @@ package oughttoprevail.asyncnetwork.packet;
 import java.util.ArrayList;
 import java.util.List;
 
-import oughttoprevail.asyncnetwork.Socket;
-import oughttoprevail.asyncnetwork.util.BiConsumer;
+import oughttoprevail.asyncnetwork.util.Consumer;
 import oughttoprevail.asyncnetwork.util.Predicate;
 
 class ReadableElement
 {
-	private final List<BiConsumer<Socket, ReadResultImpl>> consumers;
+	private final List<Consumer<ReadResultImpl>> consumers;
 	private final Predicate<ReadResult> predicate;
 	private final PassedNumber timesToRepeat;
 	private int size;
@@ -42,7 +41,7 @@ class ReadableElement
 	 * @param consumer to add to the consumers list
 	 * @param size of how many results this consumer will add
 	 */
-	void add(BiConsumer<Socket, ReadResultImpl> consumer, int size)
+	void add(Consumer<ReadResultImpl> consumer, int size)
 	{
 		this.size += size;
 		consumers.add(consumer);
@@ -53,7 +52,7 @@ class ReadableElement
 	 *
 	 * @return the consumers of this element
 	 */
-	List<BiConsumer<Socket, ReadResultImpl>> getConsumers()
+	List<Consumer<ReadResultImpl>> getConsumers()
 	{
 		return consumers;
 	}

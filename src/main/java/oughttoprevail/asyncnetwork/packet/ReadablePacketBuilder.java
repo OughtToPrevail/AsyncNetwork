@@ -21,12 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oughttoprevail.asyncnetwork.Socket;
-import oughttoprevail.asyncnetwork.util.Util;
-import oughttoprevail.asyncnetwork.util.Validator;
 import oughttoprevail.asyncnetwork.util.BiConsumer;
 import oughttoprevail.asyncnetwork.util.Consumer;
+import oughttoprevail.asyncnetwork.util.Function;
 import oughttoprevail.asyncnetwork.util.Predicate;
 import oughttoprevail.asyncnetwork.util.TriConsumer;
+import oughttoprevail.asyncnetwork.util.Util;
+import oughttoprevail.asyncnetwork.util.Validator;
 
 public class ReadablePacketBuilder
 {
@@ -86,15 +87,15 @@ public class ReadablePacketBuilder
 	 * to the {@link ReadResult}
 	 * @return this
 	 */
-	private ReadablePacketBuilder add(BiConsumer<Socket, ReadResultImpl> consumer, int size)
+	private ReadablePacketBuilder add(Consumer<ReadResultImpl> consumer, int size)
 	{
 		currentReadableElement.add(consumer, size);
 		return this;
 	}
 	
 	/**
-	 * Invokes {@link #add(BiConsumer, int)} and uses the specified consumer to read from the
-	 * specified {@link Socket} a {@link ByteBuffer} then invokes the specified consumer with the
+	 * Invokes {@link #add(Consumer, int)} and uses the specified consumer to read from the
+	 * {@link Socket} a {@link ByteBuffer} then invokes the specified consumer with the
 	 * read {@link ByteBuffer} and the given {@link ReadResultImpl}.
 	 *
 	 * @param consumer to invoke with the read {@link ByteBuffer} and {@link ReadResultImpl}
@@ -103,13 +104,13 @@ public class ReadablePacketBuilder
 	 */
 	private ReadablePacketBuilder offerByteBuffer(BiConsumer<ByteBuffer, ReadResultImpl> consumer, int bytes)
 	{
-		return add(((socket, readResult) -> socket.readByteBuffer(byteBuffer -> consumer.accept(byteBuffer,
+		return add((readResult -> readResult.socket().readByteBuffer(byteBuffer -> consumer.accept(byteBuffer,
 				readResult), bytes)), 1);
 	}
 	
 	/**
-	 * Invokes {@link #add(BiConsumer, int)} and uses the specified consumer to read from the
-	 * specified {@link Socket} a {@link ByteBuffer} then invokes the specified consumer with the
+	 * Invokes {@link #add(Consumer, int)} and uses the specified consumer to read from the
+	 * {@link Socket} a {@link ByteBuffer} then invokes the specified consumer with the
 	 * read {@link ByteBuffer}, then the specified passedNumber is invoked and the number returned
 	 * is added to the readResult if the specified skip is false, the returned numbere is also
 	 * later used when invoking the specified consumer and when invoking {@link Socket#readByteBuffer(Consumer, int)}
@@ -126,16 +127,22 @@ public class ReadablePacketBuilder
 			PassedNumber passedNumber, boolean skip)
 	{
 		Validator.requireNonNull(passedNumber, "PassedNumber");
-		return add(((socket, readResult) -> socket.readByteBuffer(byteBuffer ->
+		return add(readResult -> readResult.socket().readByteBuffer(byteBuffer ->
 		{
-			Number length = passedNumber.get(byteBuffer);
+			Number length = passedNumber.apply(byteBuffer);
 			int intLength = length.intValue();
 			if(!skip)
 			{
 				readResult.add(length);
 			}
+			Socket socket = readResult.socket();
+			if(intLength < 0)
+			{
+				socket.manager().exception(new IllegalArgumentException("Received length less then zero! (" + intLength + ")"));
+				return;
+			}
 			socket.readByteBuffer(byteBuffer1 -> consumer.accept(byteBuffer1, readResult, intLength), intLength);
-		}, passedNumber.getSize())), skip ? 1 : 2);
+		}, passedNumber.getSize()), skip ? 1 : 2);
 	}
 	
 	/**
@@ -233,6 +240,73 @@ public class ReadablePacketBuilder
 	public ReadablePacketBuilder aLong()
 	{
 		return offerByteBuffer((byteBuffer, readResult) -> readResult.add(byteBuffer.getLong()), Util.LONG_BYTES);
+	}
+	
+	/**
+	 * Reads a single {@link E} as if the received ordinal was a byte.
+	 *
+	 * @param cls class of {@link E}
+	 * @param <E> type of {@link E}
+	 * @return this
+	 */
+	public <E extends Enum<E>> ReadablePacketBuilder aEnumByte(Class<E> cls)
+	{
+		return aEnum(byteBuffer -> (int) byteBuffer.get(), Util.BYTE_BYTES, cls);
+	}
+	
+	/**
+	 * Reads a single {@link E} as if the received ordinal was a short.
+	 *
+	 * @param cls class of {@link E}
+	 * @param <E> type of {@link E}
+	 * @return this
+	 */
+	public <E extends Enum<E>> ReadablePacketBuilder aEnumShort(Class<E> cls)
+	{
+		return aEnum(byteBuffer -> (int) byteBuffer.getShort(), Util.SHORT_BYTES, cls);
+	}
+	
+	/**
+	 * Reads a single {@link E} as if the received ordinal was a int.
+	 *
+	 * @param cls class of {@link E}
+	 * @param <E> type of {@link E}
+	 * @return this
+	 */
+	public <E extends Enum<E>> ReadablePacketBuilder aEnumInt(Class<E> cls)
+	{
+		return aEnum(ByteBuffer::getInt, Util.INT_BYTES, cls);
+	}
+	
+	/**
+	 * Reads a single {@link E} using the received ordinal returned from the consumer.
+	 *
+	 * @param consumer to read the ordinal
+	 * @param bytes the byteBuffer should contain for the consumer to return the ordinal
+	 * @param cls class of {@link E}
+	 * @param <E> type of {@link E}
+	 * @return this
+	 */
+	private <E extends Enum<E>> ReadablePacketBuilder aEnum(Function<ByteBuffer, Integer> consumer, int bytes, Class<E> cls)
+	{
+		System.out.println("Read enum: " + bytes);
+		return offerByteBuffer((byteBuffer, readResult) ->
+		{
+			E[] enumConstants = cls.getEnumConstants();
+			if(enumConstants == null)
+			{
+				readResult.socket().manager().exception(new IllegalArgumentException("Specified class (cls parameter) isn't an enum!"));
+				return;
+			}
+			int aInt = consumer.apply(byteBuffer);
+			System.out.println("A enum: " + aInt);
+			if(aInt > enumConstants.length || aInt < 0)
+			{
+				readResult.socket().manager().exception(new IllegalArgumentException("Received illegal enum number: " + aInt + "!"));
+				return;
+			}
+			readResult.add(enumConstants[aInt]);
+		}, bytes);
 	}
 	
 	/**

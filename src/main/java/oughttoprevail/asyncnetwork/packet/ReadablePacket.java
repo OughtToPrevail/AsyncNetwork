@@ -21,9 +21,8 @@ import java.util.Deque;
 import java.util.List;
 
 import oughttoprevail.asyncnetwork.Socket;
-import oughttoprevail.asyncnetwork.util.Validator;
-import oughttoprevail.asyncnetwork.util.BiConsumer;
 import oughttoprevail.asyncnetwork.util.Consumer;
+import oughttoprevail.asyncnetwork.util.Validator;
 
 public class ReadablePacket
 {
@@ -80,7 +79,7 @@ public class ReadablePacket
 					int read = 0;
 					if(readInstruction.test(readResult))
 					{
-						read = read(socket, readResult, readInstruction);
+						read = read(readResult, readInstruction);
 					}
 					loop(socket, readResult, finalCurrentSize + read, finalIndex, totalSize, consumer);
 				});
@@ -92,7 +91,7 @@ public class ReadablePacket
 				PassedNumber timesToRepeat = readInstruction.getTimesToRepeat();
 				socket.readByteBuffer(byteBuffer ->
 				{
-					Number value = timesToRepeat.get(byteBuffer);
+					Number value = timesToRepeat.apply(byteBuffer);
 					if(!skip)
 					{
 						readResult.add(value);
@@ -104,7 +103,7 @@ public class ReadablePacket
 						int read = 0;
 						for(int i = 0; i < intValue; i++)
 						{
-							read += read(socket, readResult, readInstruction);
+							read += read(readResult, readInstruction);
 						}
 						loop(socket, readResult, newCurrentSize + read, finalIndex, totalSize, consumer);
 					});
@@ -112,18 +111,18 @@ public class ReadablePacket
 				return;
 			} else
 			{
-				currentSize += read(socket, readResult, readInstruction);
+				currentSize += read(readResult, readInstruction);
 			}
 		}
 		readResult.notifyWhen(totalSize, () -> consumer.accept(readResult));
 	}
 	
-	private int read(Socket socket, ReadResultImpl readResult, ReadableElement readInstruction)
+	private int read(ReadResultImpl readResult, ReadableElement readInstruction)
 	{
-		List<BiConsumer<Socket, ReadResultImpl>> consumers = readInstruction.getConsumers();
-		for(BiConsumer<Socket, ReadResultImpl> instruction : consumers)
+		List<Consumer<ReadResultImpl>> consumers = readInstruction.getConsumers();
+		for(Consumer<ReadResultImpl> instruction : consumers)
 		{
-			instruction.accept(socket, readResult);
+			instruction.accept(readResult);
 		}
 		return readInstruction.size();
 	}

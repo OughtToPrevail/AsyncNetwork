@@ -17,7 +17,7 @@ package oughttoprevail.asyncnetwork.packet;
 
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-public class RegisteredPacket
+public class RegisteredPacket<E extends Enum<E>>
 {
 	private final ReadablePacket packet;
 	private final Consumer<ReadResult> readResultConsumer;
@@ -36,5 +36,28 @@ public class RegisteredPacket
 	public Consumer<ReadResult> getReadResultConsumer()
 	{
 		return readResultConsumer;
+	}
+	
+	/**
+	 * Permission required to run the packet
+	 */
+	private E permission;
+	
+	/**
+	 * Sets the permission required to run the packet to the specified permission.
+	 *
+	 * @param permission to set as the required permission to run the packet
+	 */
+	public void setPermission(E permission)
+	{
+		this.permission = permission;
+	}
+	
+	/**
+	 * @return the required permission to run the packet or {@code null} if one was not set
+	 */
+	public E getPermission()
+	{
+		return permission;
 	}
 }

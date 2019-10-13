@@ -233,42 +233,45 @@ public abstract class SelectableServer extends AbstractServer
 			IndexedList<ServerClientSocket> clients = getClientList();
 			WindowsSelectorFlags flags = new WindowsSelectorFlags(this, clients, selector, serverSocket);
 			ExecutorService executorService = manager().getExecutorService();
-			executorService.execute(() ->
+			for(int i = 0; i < threadsCount; i++)
 			{
-				try(PooledByteBuffer pooledResult = new PooledByteBuffer(/*opcode*/Util.BYTE_BYTES + /*client index*/Util.INT_BYTES + /*is read*/Util.BYTE_BYTES + /*the received bytes*/Util.INT_BYTES))
+				executorService.execute(() ->
 				{
-					ByteBuffer result = pooledResult.getByteBuffer();
-					result.order(ByteOrder.nativeOrder());
-					int selectTimeout = getSelectTimeout();
-					while(!isClosed())
+					try(PooledByteBuffer pooledResult = new PooledByteBuffer(/*opcode*/Util.BYTE_BYTES + /*client index*/Util.INT_BYTES + /*is read*/Util.BYTE_BYTES + /*the received bytes*/Util.INT_BYTES))
 					{
-						try
+						ByteBuffer result = pooledResult.getByteBuffer();
+						result.order(ByteOrder.nativeOrder());
+						int selectTimeout = getSelectTimeout();
+						while(!isClosed())
 						{
-							Object finishedWrite = selector.select(selectTimeout, pooledResult.address());
-							flags.select(result, finishedWrite);
-						} catch(SelectException e)
-						{
-							int index = e.getIndex();
-							ServerClientSocket client = clients.get(index);
-							if(client == null)
+							try
 							{
-								manager().exception(e);
-							} else
+								Object finishedWrite = selector.select(selectTimeout, pooledResult.address());
+								flags.select(result, finishedWrite);
+							} catch(SelectException e)
 							{
-								Validator.handleRemoteHostCloseException(client, e);
+								int index = e.getIndex();
+								ServerClientSocket client = clients.get(index);
+								if(client == null)
+								{
+									manager().exception(e);
+								} else
+								{
+									Validator.handleRemoteHostCloseException(client, e);
+								}
+							} catch(IOException e)
+							{
+								e.printStackTrace();
+								Validator.exceptionClose(this, e);
+							} finally
+							{
+								result.clear();
 							}
-						} catch(IOException e)
-						{
-							e.printStackTrace();
-							Validator.exceptionClose(this, e);
-						} finally
-						{
-							result.clear();
 						}
+						flags.close();
 					}
-					flags.close();
-				}
-			});
+				});
+			}
 			flags.AcceptEx();
 			return selector;
 		} catch(IOException | NoSuchMethodException | ClassNotFoundException | NoSuchFieldException e)

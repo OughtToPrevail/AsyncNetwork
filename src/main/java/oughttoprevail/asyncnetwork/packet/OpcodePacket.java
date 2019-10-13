@@ -22,19 +22,22 @@ import oughttoprevail.asyncnetwork.Socket;
 import oughttoprevail.asyncnetwork.util.BiConsumer;
 import oughttoprevail.asyncnetwork.util.Consumer;
 
-public class OpcodePacket
+public class OpcodePacket<E extends Enum<E>>
 {
 	private final PassedNumber passedNumber;
-	private final Map<Integer, RegisteredPacket> registeredPackets;
+	private final Map<Integer, RegisteredPacket<E>> registeredPackets;
 	private final List<BiConsumer<Socket, Integer>> onInvalidOpcode;
+	private final PermissionHandler<E> permissionHandler;
 	
-	public OpcodePacket(Map<Integer, RegisteredPacket> registeredPackets,
-						PassedNumber passedNumber,
-						List<BiConsumer<Socket, Integer>> onInvalidOpcode)
+	public OpcodePacket(Map<Integer, RegisteredPacket<E>> registeredPackets,
+	                    PassedNumber passedNumber,
+	                    List<BiConsumer<Socket, Integer>> onInvalidOpcode,
+	                    PermissionHandler<E> permissionHandler)
 	{
 		this.passedNumber = passedNumber;
 		this.registeredPackets = registeredPackets;
 		this.onInvalidOpcode = onInvalidOpcode;
+		this.permissionHandler = permissionHandler;
 	}
 	
 	/**
@@ -52,8 +55,9 @@ public class OpcodePacket
 	{
 		socket.readByteBuffer(byteBuffer ->
 		{
-			int opcode = passedNumber.get(byteBuffer).intValue();
-			RegisteredPacket packet = registeredPackets.get(opcode);
+			int opcode = passedNumber.apply(byteBuffer).intValue();
+			RegisteredPacket<E> packet = registeredPackets.get(opcode);
+			System.out.println("Opcode: " + opcode + " " + packet + " " + permissionHandler);
 			if(packet == null)
 			{
 				for(BiConsumer<Socket, Integer> invalidOpcodeConsumer : onInvalidOpcode)
@@ -62,7 +66,19 @@ public class OpcodePacket
 				}
 				return;
 			}
-			packet.getPacket().read(socket, packet.getReadResultConsumer());
+			Consumer<ReadResult> readResultConsumer = packet.getReadResultConsumer();
+			packet.getPacket().read(socket, permissionHandler == null ? readResultConsumer : readResult ->
+			{
+				//check here instead of outside since it may change
+				E permission = packet.getPermission();
+				if(permission != null && permissionHandler.hasPermission(socket, permission))
+				{
+					readResultConsumer.accept(readResult);
+				} else
+				{
+					permissionHandler.noPermission(socket, permission, opcode);
+				}
+			});
 			if(repeat)
 			{
 				listen(socket, true);
@@ -76,8 +92,16 @@ public class OpcodePacket
 	 *
 	 * @return all registered packets passed from the {@link OpcodePacketBuilder}
 	 */
-	public Map<Integer, RegisteredPacket> getRegisteredPackets()
+	public Map<Integer, RegisteredPacket<E>> getRegisteredPackets()
 	{
 		return registeredPackets;
+	}
+	
+	/**
+	 * @return permission handler if exists ({@code null} if it doesn't exist)
+	 */
+	public PermissionHandler<E> getPermissionHandler()
+	{
+		return permissionHandler;
 	}
 }

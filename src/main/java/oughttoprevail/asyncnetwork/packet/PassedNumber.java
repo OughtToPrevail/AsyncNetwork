@@ -17,9 +17,10 @@ package oughttoprevail.asyncnetwork.packet;
 
 import java.nio.ByteBuffer;
 
+import oughttoprevail.asyncnetwork.util.Function;
 import oughttoprevail.asyncnetwork.util.Util;
 
-public interface PassedNumber<T extends Number>
+public interface PassedNumber<T extends Number> extends Function<ByteBuffer, T>
 {
 	/**
 	 * Returns a {@link Number} read from the specified byteBuffer.
@@ -27,7 +28,8 @@ public interface PassedNumber<T extends Number>
 	 * @param byteBuffer containing the {@link Number} to return
 	 * @return a {@link Number} read from the specified byteBuffer
 	 */
-	T get(ByteBuffer byteBuffer);
+	@Override
+	T apply(ByteBuffer byteBuffer);
 	
 	/**
 	 * Returns the size in bytes of the number returned from {@link PassedNumber}.
@@ -39,7 +41,7 @@ public interface PassedNumber<T extends Number>
 	PassedNumber<Byte> PASSABLE_BYTE = new PassedNumber<Byte>()
 	{
 		@Override
-		public Byte get(ByteBuffer byteBuffer)
+		public Byte apply(ByteBuffer byteBuffer)
 		{
 			return byteBuffer.get();
 		}
@@ -53,7 +55,7 @@ public interface PassedNumber<T extends Number>
 	PassedNumber<Short> PASSABLE_UNSIGNED_BYTE = new PassedNumber<Short>()
 	{
 		@Override
-		public Short get(ByteBuffer byteBuffer)
+		public Short apply(ByteBuffer byteBuffer)
 		{
 			return Util.toUnsignedShort(byteBuffer.get());
 		}
@@ -67,7 +69,7 @@ public interface PassedNumber<T extends Number>
 	PassedNumber<Short> PASSABLE_SHORT = new PassedNumber<Short>()
 	{
 		@Override
-		public Short get(ByteBuffer byteBuffer)
+		public Short apply(ByteBuffer byteBuffer)
 		{
 			return byteBuffer.getShort();
 		}
@@ -81,7 +83,7 @@ public interface PassedNumber<T extends Number>
 	PassedNumber<Integer> PASSABLE_UNSIGNED_SHORT = new PassedNumber<Integer>()
 	{
 		@Override
-		public Integer get(ByteBuffer byteBuffer)
+		public Integer apply(ByteBuffer byteBuffer)
 		{
 			return Util.toUnsignedInt(byteBuffer.getShort());
 		}
@@ -95,7 +97,7 @@ public interface PassedNumber<T extends Number>
 	PassedNumber<Integer> PASSABLE_INTEGER = new PassedNumber<Integer>()
 	{
 		@Override
-		public Integer get(ByteBuffer byteBuffer)
+		public Integer apply(ByteBuffer byteBuffer)
 		{
 			return byteBuffer.getInt();
 		}

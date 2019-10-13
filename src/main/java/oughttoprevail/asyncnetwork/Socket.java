@@ -89,7 +89,7 @@ public abstract class Socket
 			@Override
 			public void callRequests()
 			{
-				reader.callRequests(Socket.this, readBuffer);
+				reader.callRequests(readBuffer);
 			}
 		};
 	}
@@ -111,7 +111,6 @@ public abstract class Socket
 					//remove all variables for memory and to make sure none get invoked after the socket has closed
 					pooledReadBuffer = null;
 					readBuffer = null;
-					onRead.clear();
 					onException.clear();
 					onBufferOverflow.clear();
 					for(Consumer<DisconnectionType> disconnectConsumer : onDisconnect)
@@ -149,15 +148,7 @@ public abstract class Socket
 	{
 		reader.read(this);
 	}
-	
-	void callOnRead(ByteBuffer byteBuffer)
-	{
-		for(Consumer<ByteBuffer> readConsumer : onRead)
-		{
-			readConsumer.accept(byteBuffer);
-		}
-	}
-	
+
 	/**
 	 * Invoked before the closed has occurred, this is useful for extending classes to make final changes.
 	 *
@@ -246,13 +237,6 @@ public abstract class Socket
 	{
 		ensureNotClosed();
 		Validator.requireNonNull(predicate, "Predicate");
-	}
-	
-	private final List<Consumer<ByteBuffer>> onRead = new ArrayList<>();
-	
-	public void onRead(Consumer<ByteBuffer> consumer)
-	{
-		this.onRead.add(consumer);
 	}
 	
 	private boolean always;

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.Queue;
 
@@ -66,7 +67,7 @@ public class Reader
 			socket.manager().close(DisconnectionType.REMOTE_CLOSE);
 			return false;
 		}
-		callRequests(socket, readBuffer);
+		callRequests(readBuffer);
 		readBuffer.limit(readBuffer.capacity());
 		if(socket.isClosed())
 		{
@@ -106,7 +107,7 @@ public class Reader
 	 *
 	 * @param byteBuffer the {@link ByteBuffer} that will be used for calling the requests
 	 */
-	public void callRequests(Socket socket, ByteBuffer byteBuffer)
+	public void callRequests(ByteBuffer byteBuffer)
 	{
 		if(byteBuffer == null)
 		{
@@ -114,30 +115,39 @@ public class Reader
 		}
 		synchronized(pendingRequests)
 		{
-			socket.manager().callOnRead(byteBuffer);
+			byte[] bytes = new byte[byteBuffer.flip().limit()];
+			byteBuffer.get(bytes);
+			byteBuffer.limit(byteBuffer.capacity());
+			System.out.println("Call requests " + pendingRequests + " " + byteBuffer.position() + " " + Arrays.toString(bytes));
 			if(pendingRequests.isEmpty() || byteBuffer.position() == 0)
 			{
 				return;
 			}
 			callingRequests = true;
-			byteBuffer.flip();
-			do
+			try
 			{
-				int leftInBuffer = byteBuffer.remaining();
-				Request request = pendingRequests.peekLast();
-				int requestLength = request.getRequestLength();
-				if(leftInBuffer < requestLength)
+				byteBuffer.flip();
+				do
 				{
-					break;
-				}
-				if(!test(request.getRequest(), byteBuffer, requestLength))
-				{
-					pendingRequests.pollLast();
-				}
-				prepend();
-			} while(!pendingRequests.isEmpty());
-			reset(byteBuffer);
-			callingRequests = false;
+					int leftInBuffer = byteBuffer.remaining();
+					Request request = pendingRequests.peekLast();
+					int requestLength = request.getRequestLength();
+					if(leftInBuffer < requestLength)
+					{
+						break;
+					}
+					System.out.println("Test in callRequests " + leftInBuffer);
+					if(!test(request.getRequest(), byteBuffer, requestLength))
+					{
+						pendingRequests.pollLast();
+					}
+					prepend();
+				} while(!pendingRequests.isEmpty());
+			} finally
+			{
+				callingRequests = false;
+				reset(byteBuffer);
+			}
 		}
 	}
 	
@@ -167,28 +177,6 @@ public class Reader
 	{
 		synchronized(pendingRequests)
 		{
-			if(!callingRequests && pendingRequests.isEmpty() && prepend.isEmpty())
-			{
-				readBuffer.flip();
-				callingRequests = true;
-				do
-				{
-					int leftInBuffer = readBuffer.remaining();
-					if(leftInBuffer >= requestLength)
-					{
-						if(!test(request, readBuffer, requestLength))
-						{
-							return;
-						}
-					} else
-					{
-						break;
-					}
-				} while(pendingRequests.isEmpty() && prepend.isEmpty());
-				callingRequests = false;
-				reset(readBuffer);
-				prepend();
-			}
 			Request requestObject = new Request(request, requestLength);
 			if(callingRequests)
 			{
@@ -196,6 +184,7 @@ public class Reader
 			} else
 			{
 				pendingRequests.offerFirst(requestObject);
+				callRequests(readBuffer);
 			}
 		}
 	}

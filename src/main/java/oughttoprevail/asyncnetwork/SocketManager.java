@@ -108,16 +108,6 @@ public class SocketManager
 		socket.callRead();
 	}
 	
-	/**
-	 * Invokes the {@link Socket#onRead(Consumer)} consumer with the specified {@link ByteBuffer}.
-	 *
-	 * @param byteBuffer the {@link ByteBuffer} which will be used when calling the onRead conusmer
-	 */
-	public void callOnRead(ByteBuffer byteBuffer)
-	{
-		socket.callOnRead(byteBuffer);
-	}
-	
 	public void finishWrite(Consumer<ByteBuffer> onWriteFinished, ByteBuffer writeBuffer)
 	{
 		if(socket.isClearAfterWrite())

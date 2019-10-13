@@ -76,6 +76,7 @@ public class WritablePacketBuilder
 	 */
 	public WritablePacketBuilder putByte(int b)
 	{
+		System.out.println("Put byte: " + b);
 		return enqueue(byteBuffer -> byteBuffer.put((byte) b), Util.BYTE_BYTES);
 	}
 	
@@ -183,6 +184,39 @@ public class WritablePacketBuilder
 	public WritablePacketBuilder putBoolean(boolean b)
 	{
 		return putByte(Util.toByte(b));
+	}
+	
+	/**
+	 * Puts the specified enum's {@link Enum#ordinal()} as a byte in the packet.
+	 *
+	 * @param e the enum that will be put in the packet
+	 * @return this
+	 */
+	public WritablePacketBuilder putEnumByte(Enum e)
+	{
+		return putByte(e.ordinal());
+	}
+	
+	/**
+	 * Puts the specified enum's {@link Enum#ordinal()} as a short in the packet.
+	 *
+	 * @param e the enum that will be put in the packet
+	 * @return this
+	 */
+	public WritablePacketBuilder putEnumShort(Enum e)
+	{
+		return putShort((short) e.ordinal());
+	}
+	
+	/**
+	 * Puts the specified enum's {@link Enum#ordinal()} as a int in the packet.
+	 *
+	 * @param e the enum that will be put in the packet
+	 * @return this
+	 */
+	public WritablePacketBuilder putEnumInt(Enum e)
+	{
+		return putInt(e.ordinal());
 	}
 	
 	/**
