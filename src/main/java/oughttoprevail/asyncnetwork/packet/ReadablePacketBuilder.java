@@ -292,11 +292,6 @@ public class ReadablePacketBuilder
 		return offerByteBuffer((byteBuffer, readResult) ->
 		{
 			E[] enumConstants = cls.getEnumConstants();
-			if(enumConstants == null)
-			{
-				readResult.socket().manager().exception(new IllegalArgumentException("Specified class (cls parameter) isn't an enum!"));
-				return;
-			}
 			int aInt = consumer.apply(byteBuffer);
 			if(aInt > enumConstants.length || aInt < 0)
 			{
@@ -318,7 +313,7 @@ public class ReadablePacketBuilder
 	public ReadablePacketBuilder aString()
 	{
 		return offerByteBuffer((byteBuffer, readResult, length) -> readResult.add(new String(Util.getBytes(byteBuffer,
-				length), Util.UTF_8)), PassedNumber.PASSABLE_INTEGER, skip);
+				length), Util.UTF_8)), PassedNumber.PASSABLE_INTEGER, true);
 	}
 	
 	/**
