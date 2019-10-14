@@ -65,6 +65,7 @@ public class ReadablePacketBuilder
 	 */
 	private ReadablePacketBuilder add(Consumer<ReadResultImpl> consumer, int size)
 	{
+		System.out.println("Add consumer");
 		currentReadableElement.add(consumer, size);
 		return this;
 	}

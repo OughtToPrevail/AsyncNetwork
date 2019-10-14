@@ -52,12 +52,14 @@ class LoopUtil
 	{
 		while(iterator.hasNext())
 		{
+			System.out.println("Next");
 			if(stopLoop)
 			{
 				afterThen.add(() -> performReadIterator(element, iterator));
 				return;
 			}
 			Consumer<ReadResultImpl> consumer = iterator.next();
+			System.out.println("Accept consumer");
 			consumer.accept(readResult);
 		}
 		size += element.size();
@@ -67,22 +69,26 @@ class LoopUtil
 	private void continueIterator(Iterator<ReadableElement> iterator)
 	{
 		totalRunningIterators++;
-		while(iterator.hasNext())
+		try
 		{
-			if(stopLoop)
+			while(iterator.hasNext())
 			{
-				afterThen.add(() -> continueIterator(iterator));
-				totalRunningIterators--;
-				return;
+				if(stopLoop)
+				{
+					afterThen.add(() -> continueIterator(iterator));
+					return;
+				}
+				ReadableElement child = iterator.next();
+				readablePacket.performLoop(this, child);
 			}
-			ReadableElement child = iterator.next();
-			readablePacket.performLoop(this, child);
+		} finally
+		{
+			totalRunningIterators--;
 		}
-		totalRunningIterators--;
 		if(totalRunningIterators == 0 && !finished)
 		{
 			finished = true;
-			onFinish.accept(readResult);
+			readResult.notifyWhen(size, () -> onFinish.accept(readResult));
 		}
 	}
 	
