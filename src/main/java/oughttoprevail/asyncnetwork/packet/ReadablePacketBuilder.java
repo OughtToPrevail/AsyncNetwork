@@ -17,8 +17,6 @@ package oughttoprevail.asyncnetwork.packet;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 import oughttoprevail.asyncnetwork.Socket;
 import oughttoprevail.asyncnetwork.util.BiConsumer;
@@ -41,7 +39,7 @@ public class ReadablePacketBuilder
 		return new ReadablePacketBuilder(skip);
 	}
 	
-	private final List<ReadableElement> readInstructions = new ArrayList<>();
+	private ReadableElement topMostParent;
 	private ReadableElement currentReadableElement;
 	private final boolean skip;
 	
@@ -53,30 +51,8 @@ public class ReadablePacketBuilder
 	public ReadablePacketBuilder(boolean skip)
 	{
 		this.skip = skip;
-		resetElement();
-	}
-	
-	/**
-	 * Resets the current element to a new {@link ReadableElement} and the constructor parameters
-	 * to {@code null}.
-	 */
-	private void resetElement()
-	{
-		addElement(null, null);
-	}
-	
-	/**
-	 * Sets the {@code currentReadableElement} to a new {@link ReadableElement}
-	 * based on the current predicate and adds it to the {@code readInstructions} queue.
-	 *
-	 * @param predicate which will decide whether to handle all requests put into the element
-	 * @param timesToRepeat how many times to repeat this element
-	 * if this is null then it will count as it always returns {@code true}
-	 */
-	private void addElement(Predicate<ReadResult> predicate, PassedNumber timesToRepeat)
-	{
-		currentReadableElement = new ReadableElement(predicate, timesToRepeat);
-		readInstructions.add(currentReadableElement);
+		topMostParent = new ReadableElement(null, null);
+		currentReadableElement = topMostParent;
 	}
 	
 	/**
@@ -371,9 +347,12 @@ public class ReadablePacketBuilder
 	{
 		Validator.requireNonNull(predicate, "Condition");
 		Validator.requireNonNull(consumer, "Consumer");
-		addElement(predicate, null);
+		ReadableElement newElement = new ReadableElement(predicate, null);
+		currentReadableElement.addChild(newElement);
+		ReadableElement previous = currentReadableElement;
+		currentReadableElement = newElement;
 		consumer.accept(this);
-		resetElement();
+		currentReadableElement = previous;
 		return this;
 	}
 	
@@ -397,7 +376,7 @@ public class ReadablePacketBuilder
 	{
 		for(int i = 0; i < timesToRepeat; i++)
 		{
-			readInstructions.get(i).repeat();
+			topMostParent.repeat();
 		}
 		return this;
 	}
@@ -428,9 +407,12 @@ public class ReadablePacketBuilder
 	public ReadablePacketBuilder repeatInstructions(PassedNumber passedNumber,
 			Consumer<ReadablePacketBuilder> consumer)
 	{
-		addElement(null, passedNumber);
+		ReadableElement newElement = new ReadableElement(null, passedNumber);
+		currentReadableElement.addChild(newElement);
+		ReadableElement previous = currentReadableElement;
+		currentReadableElement = newElement;
 		consumer.accept(this);
-		resetElement();
+		currentReadableElement = previous;
 		return this;
 	}
 	
@@ -441,10 +423,11 @@ public class ReadablePacketBuilder
 	 */
 	public ReadablePacket build()
 	{
-		if(readInstructions.size() == 0)
+		//delete empty instructions
+		if(topMostParent.size() == 0 && topMostParent.getChildren().size() == 0)
 		{
 			return ReadablePacket.EMPTY;
 		}
-		return new ReadablePacket(readInstructions, skip);
+		return new ReadablePacket(topMostParent, skip);
 	}
 }

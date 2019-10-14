@@ -73,6 +73,11 @@ public class ReadResultImpl implements ReadResult
 		}
 	}
 	
+	public boolean isWaiting()
+	{
+		return runnable != null;
+	}
+	
 	/**
 	 * Throws an {@link IllegalStateException} if {@link #hasNext()} returns false.
 	 *

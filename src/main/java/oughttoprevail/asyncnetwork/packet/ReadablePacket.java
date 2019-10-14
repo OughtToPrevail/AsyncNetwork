@@ -16,9 +16,7 @@ limitations under the License.
 package oughttoprevail.asyncnetwork.packet;
 
 import java.util.ArrayDeque;
-import java.util.Collections;
 import java.util.Deque;
-import java.util.List;
 
 import oughttoprevail.asyncnetwork.Socket;
 import oughttoprevail.asyncnetwork.util.Consumer;
@@ -26,26 +24,15 @@ import oughttoprevail.asyncnetwork.util.Validator;
 
 public class ReadablePacket
 {
-	public static final ReadablePacket EMPTY = new ReadablePacket(Collections.emptyList(), true);
+	public static final ReadablePacket EMPTY = new ReadablePacket(new ReadableElement(null, null), true);
 	
-	private final List<ReadableElement> readInstructions;
+	private final ReadableElement topMostParent;
 	private final boolean skip;
-	private final int totalSize;
 	
-	public ReadablePacket(List<ReadableElement> readInstructions, boolean skip)
+	public ReadablePacket(ReadableElement topMostParent, boolean skip)
 	{
-		this.readInstructions = readInstructions;
+		this.topMostParent = topMostParent;
 		this.skip = skip;
-		int totalSize = 0;
-		for(ReadableElement readInstruction : readInstructions)
-		{
-			totalSize += readInstruction.size();
-			if(readInstruction.hasTimesToRepeat() && !skip)
-			{
-				totalSize++;
-			}
-		}
-		this.totalSize = totalSize;
 	}
 	
 	/**
@@ -61,69 +48,42 @@ public class ReadablePacket
 		Validator.requireNonNull(consumer, "Consumer");
 		Deque<Object> queue = new ArrayDeque<>();
 		ReadResultImpl readResult = new ReadResultImpl(socket, queue);
-		loop(socket, readResult, 0, 0, totalSize, consumer);
+		LoopUtil loopUtil = new LoopUtil(this, socket, readResult, consumer);
+		performLoop(loopUtil, topMostParent);
 		return this;
 	}
 	
-	private void loop(Socket socket, ReadResultImpl readResult, int currentSize, int index, int totalSize, Consumer<ReadResult> consumer)
+	void performLoop(LoopUtil loopUtil, ReadableElement element)
 	{
-		for(; index < readInstructions.size(); index++)
+		if(element.hasPredicate())
 		{
-			ReadableElement readInstruction = readInstructions.get(index);
-			if(readInstruction.hasPredicate())
+			loopUtil.then(() ->
 			{
-				int finalCurrentSize = currentSize;
-				int finalIndex = index + 1;
-				readResult.notifyWhen(currentSize, () ->
+				if(element.test(loopUtil.getReadResult()))
 				{
-					int read = 0;
-					if(readInstruction.test(readResult))
-					{
-						read = read(readResult, readInstruction);
-					}
-					loop(socket, readResult, finalCurrentSize + read, finalIndex, totalSize, consumer);
-				});
-				return;
-			} else if(readInstruction.hasTimesToRepeat())
-			{
-				int finalCurrentSize = currentSize;
-				int finalIndex = index + 1;
-				PassedNumber timesToRepeat = readInstruction.getTimesToRepeat();
-				socket.readByteBuffer(byteBuffer ->
-				{
-					Number value = timesToRepeat.apply(byteBuffer);
-					if(!skip)
-					{
-						readResult.add(value);
-					}
-					int intValue = value.intValue();
-					int newCurrentSize = finalCurrentSize + (skip ? 0 : 1);
-					readResult.notifyWhen(newCurrentSize, () ->
-					{
-						int read = 0;
-						for(int i = 0; i < intValue; i++)
-						{
-							read += read(readResult, readInstruction);
-						}
-						loop(socket, readResult, newCurrentSize + read, finalIndex, totalSize, consumer);
-					});
-				}, timesToRepeat.getSize());
-				return;
-			} else
-			{
-				currentSize += read(readResult, readInstruction);
-			}
-		}
-		readResult.notifyWhen(totalSize, () -> consumer.accept(readResult));
-	}
-	
-	private int read(ReadResultImpl readResult, ReadableElement readInstruction)
-	{
-		List<Consumer<ReadResultImpl>> consumers = readInstruction.getConsumers();
-		for(Consumer<ReadResultImpl> instruction : consumers)
+					loopUtil.read(element);
+				}
+			});
+		} else if(element.hasTimesToRepeat())
 		{
-			instruction.accept(readResult);
+			PassedNumber timesToRepeat = element.getTimesToRepeat();
+			loopUtil.getSocket().readByteBuffer(byteBuffer ->
+			{
+				Number value = timesToRepeat.apply(byteBuffer);
+				if(!skip)
+				{
+					loopUtil.getReadResult().add(value);
+					loopUtil.incrementSize();
+				}
+				int intValue = value.intValue();
+				for(int i = 0; i < intValue; i++)
+				{
+					loopUtil.read(element);
+				}
+			}, timesToRepeat.getSize());
+		} else
+		{
+			loopUtil.read(element);
 		}
-		return readInstruction.size();
 	}
 }

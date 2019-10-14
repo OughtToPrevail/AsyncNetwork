@@ -23,16 +23,35 @@ import oughttoprevail.asyncnetwork.util.Predicate;
 
 class ReadableElement
 {
-	private final List<Consumer<ReadResultImpl>> consumers;
+	private final List<ReadableElement> children = new ArrayList<>();
+	private ReadableElement next;
+	private final List<Consumer<ReadResultImpl>> consumers = new ArrayList<>();
 	private final Predicate<ReadResult> predicate;
 	private final PassedNumber timesToRepeat;
 	private int size;
 	
 	ReadableElement(Predicate<ReadResult> predicate, PassedNumber timesToRepeat)
 	{
-		this.consumers = new ArrayList<>();
 		this.predicate = predicate;
 		this.timesToRepeat = timesToRepeat;
+	}
+	
+	/**
+	 * Adds a child {@link ReadableElement} to this
+	 *
+	 * @param child element to be added
+	 */
+	void addChild(ReadableElement child)
+	{
+		children.add(child);
+	}
+	
+	/**
+	 * @return list of children
+	 */
+	public List<ReadableElement> getChildren()
+	{
+		return children;
 	}
 	
 	/**
@@ -108,6 +127,10 @@ class ReadableElement
 		for(int i = 0; i < size; i++)
 		{
 			consumers.add(consumers.get(i));
+		}
+		for(ReadableElement child : children)
+		{
+			child.repeat();
 		}
 	}
 	
