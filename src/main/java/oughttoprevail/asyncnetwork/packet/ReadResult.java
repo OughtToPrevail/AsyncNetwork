@@ -90,21 +90,6 @@ public interface ReadResult
 	<T> T peekLast();
 	
 	/**
-	 * Skips an index in the {@link Queue}.
-	 *
-	 * @return this
-	 */
-	ReadResult skip();
-	
-	/**
-	 * Repeats {@link #skip()} specified n amount of times.
-	 *
-	 * @param n amount of times to repeat {@link #skip()}.
-	 * @return this
-	 */
-	ReadResult skip(int n);
-	
-	/**
 	 * Returns whether there is anymore data in the queue.
 	 *
 	 * @return whether there is anymore data in the queue

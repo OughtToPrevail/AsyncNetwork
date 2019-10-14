@@ -64,6 +64,11 @@ class LoopUtil
 		}
 		size += element.size();
 		continueIterator(element.getChildren().iterator());
+		if(totalRunningIterators == 0 && !finished)
+		{
+			finished = true;
+			readResult.notifyWhen(size, () -> onFinish.accept(readResult));
+		}
 	}
 	
 	private void continueIterator(Iterator<ReadableElement> iterator)
@@ -84,11 +89,6 @@ class LoopUtil
 		} finally
 		{
 			totalRunningIterators--;
-		}
-		if(totalRunningIterators == 0 && !finished)
-		{
-			finished = true;
-			readResult.notifyWhen(size, () -> onFinish.accept(readResult));
 		}
 	}
 	
@@ -123,7 +123,7 @@ class LoopUtil
 		return socket;
 	}
 	
-	public void incrementSize()
+	void incrementSize()
 	{
 		size++;
 	}

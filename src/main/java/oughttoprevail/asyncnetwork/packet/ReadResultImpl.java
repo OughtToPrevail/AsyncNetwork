@@ -48,12 +48,14 @@ public class ReadResultImpl implements ReadResult
 	{
 		synchronized(lock)
 		{
+			System.out.println("Add to list");
 			results.add(obj);
 			if(runnable != null && results.size() >= runnableRequestSize)
 			{
 				Runnable temp = runnable;
 				runnableRequestSize = -1;
 				runnable = null;
+				System.out.println("Run runnable");
 				temp.run();
 			}
 		}
@@ -65,17 +67,13 @@ public class ReadResultImpl implements ReadResult
 		{
 			if(results.size() >= requestSize)
 			{
+				System.out.println("Run in notify " + results.size());
 				runnable.run();
 				return;
 			}
 			this.runnableRequestSize = requestSize;
 			this.runnable = runnable;
 		}
-	}
-	
-	public boolean isWaiting()
-	{
-		return runnable != null;
 	}
 	
 	/**
@@ -198,36 +196,6 @@ public class ReadResultImpl implements ReadResult
 		ensureHasNext();
 		
 		return cast(results.peekLast());
-	}
-	
-	/**
-	 * Skips an index in the {@link Queue}.
-	 *
-	 * @return this
-	 */
-	@Override
-	public ReadResult skip()
-	{
-		ensureHasNext();
-		results.poll();
-		collected++;
-		return this;
-	}
-	
-	/**
-	 * Repeats {@link #skip()} specified n amount of times.
-	 *
-	 * @param n amount of times to repeat {@link #skip()}.
-	 * @return this
-	 */
-	@Override
-	public ReadResult skip(int n)
-	{
-		for(int i = 0; i < n; i++)
-		{
-			skip();
-		}
-		return this;
 	}
 	
 	/**

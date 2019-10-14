@@ -70,8 +70,10 @@ public class ReadablePacket
 			loopUtil.getSocket().readByteBuffer(byteBuffer ->
 			{
 				Number value = timesToRepeat.apply(byteBuffer);
+				System.out.println("VALUE: " + value);
 				if(!skip)
 				{
+					System.out.println("add");
 					loopUtil.getReadResult().add(value);
 					loopUtil.incrementSize();
 				}

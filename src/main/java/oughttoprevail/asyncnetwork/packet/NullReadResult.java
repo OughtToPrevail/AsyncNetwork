@@ -74,20 +74,6 @@ public class NullReadResult implements ReadResult
 	}
 	
 	@Override
-	public ReadResult skip()
-	{
-		throwException();
-		return null;
-	}
-	
-	@Override
-	public ReadResult skip(int n)
-	{
-		throwException();
-		return null;
-	}
-	
-	@Override
 	public boolean hasNext()
 	{
 		return false;
