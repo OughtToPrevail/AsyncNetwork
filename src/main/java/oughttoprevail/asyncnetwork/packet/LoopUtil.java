@@ -27,15 +27,20 @@ class LoopUtil
 	private final ReadablePacket readablePacket;
 	private final Socket socket;
 	private final ReadResultImpl readResult;
+	private final Consumer<ReadResult> onFinish;
 	private int size;
 	private List<Runnable> afterThen = new ArrayList<>();
 	private boolean stopLoop;
+	private int totalRunningIterators;
+	private int waitingTimesRepeat;
+	private boolean finished;
 	
-	LoopUtil(ReadablePacket readablePacket, Socket socket, ReadResultImpl readResult)
+	LoopUtil(ReadablePacket readablePacket, Socket socket, ReadResultImpl readResult, Consumer<ReadResult> onFinish)
 	{
 		this.readablePacket = readablePacket;
 		this.socket = socket;
 		this.readResult = readResult;
+		this.onFinish = onFinish;
 	}
 	
 	void read(ReadableElement element)
@@ -46,20 +51,28 @@ class LoopUtil
 	
 	private void performReadIterator(ReadableElement element, Iterator<Consumer<ReadResultImpl>> iterator)
 	{
-		while(iterator.hasNext())
+		totalRunningIterators++;
+		try
 		{
-			System.out.println("Next");
-			if(stopLoop)
+			while(iterator.hasNext())
 			{
-				afterThen.add(() -> performReadIterator(element, iterator));
-				return;
+				System.out.println("Next");
+				if(stopLoop)
+				{
+					afterThen.add(() -> performReadIterator(element, iterator));
+					return;
+				}
+				Consumer<ReadResultImpl> consumer = iterator.next();
+				System.out.println("Accept consumer");
+				consumer.accept(readResult);
 			}
-			Consumer<ReadResultImpl> consumer = iterator.next();
-			System.out.println("Accept consumer");
-			consumer.accept(readResult);
+			size += element.size();
+			continueIterator(element.getChildren().iterator());
+		} finally
+		{
+			totalRunningIterators--;
 		}
-		size += element.size();
-		continueIterator(element.getChildren().iterator());
+		possiblyFinished();
 	}
 	
 	private void continueIterator(Iterator<ReadableElement> iterator)
@@ -73,6 +86,35 @@ class LoopUtil
 			}
 			ReadableElement child = iterator.next();
 			readablePacket.performLoop(this, child);
+		}
+	}
+	
+	void waitTimesRepeat()
+	{
+		waitingTimesRepeat++;
+	}
+	
+	void finishedTimesRepeat(boolean read)
+	{
+		waitingTimesRepeat--;
+		if(!read)
+		{
+			possiblyFinished();
+		}
+	}
+	
+	private void possiblyFinished()
+	{
+		System.out.println("Check has finished: " + totalRunningIterators + " " + waitingTimesRepeat + " " + finished + " " + stopLoop + " " + size);
+		if(totalRunningIterators == 0 && waitingTimesRepeat == 0 && !finished && !stopLoop)
+		{
+			finished = true;
+			System.out.println("Finished");
+			readResult.notifyWhen(size, () ->
+			{
+				System.out.println("onFinish");
+				onFinish.accept(readResult);
+			});
 		}
 	}
 	

@@ -24,17 +24,15 @@ import oughttoprevail.asyncnetwork.util.Validator;
 
 public class ReadablePacket
 {
-	public static final ReadablePacket EMPTY = new ReadablePacket(new ReadableElement(null, null), true, 0);
+	public static final ReadablePacket EMPTY = new ReadablePacket(new ReadableElement(null, null), true);
 	
 	private final ReadableElement topMostParent;
 	private final boolean skip;
-	private final int totalSize;
 	
-	public ReadablePacket(ReadableElement topMostParent, boolean skip, int totalSize)
+	public ReadablePacket(ReadableElement topMostParent, boolean skip)
 	{
 		this.topMostParent = topMostParent;
 		this.skip = skip;
-		this.totalSize = totalSize;
 	}
 	
 	/**
@@ -49,8 +47,8 @@ public class ReadablePacket
 	{
 		Validator.requireNonNull(consumer, "Consumer");
 		Deque<Object> queue = new ArrayDeque<>();
-		ReadResultImpl readResult = new ReadResultImpl(socket, queue, consumer, totalSize);
-		LoopUtil loopUtil = new LoopUtil(this, socket, readResult);
+		ReadResultImpl readResult = new ReadResultImpl(socket, queue);
+		LoopUtil loopUtil = new LoopUtil(this, socket, readResult, consumer);
 		performLoop(loopUtil, topMostParent);
 		return this;
 	}
@@ -69,6 +67,7 @@ public class ReadablePacket
 		} else if(element.hasTimesToRepeat())
 		{
 			PassedNumber timesToRepeat = element.getTimesToRepeat();
+			loopUtil.waitTimesRepeat();
 			loopUtil.getSocket().readByteBuffer(byteBuffer ->
 			{
 				Number value = timesToRepeat.apply(byteBuffer);
@@ -84,6 +83,7 @@ public class ReadablePacket
 				{
 					loopUtil.read(element);
 				}
+				loopUtil.finishedTimesRepeat(intValue > 0);
 			}, timesToRepeat.getSize());
 		} else
 		{
