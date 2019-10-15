@@ -63,7 +63,7 @@ public class ReadResultImpl implements ReadResult
 				System.out.println("Run runnable");
 				temp.run();
 			}
-			if(results.size() > totalSize)
+			if(results.size() >= totalSize)
 			{
 				onFinish.accept(this);
 			}
