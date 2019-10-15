@@ -24,15 +24,17 @@ import oughttoprevail.asyncnetwork.util.Validator;
 
 public class ReadablePacket
 {
-	public static final ReadablePacket EMPTY = new ReadablePacket(new ReadableElement(null, null), true);
+	public static final ReadablePacket EMPTY = new ReadablePacket(new ReadableElement(null, null), true, 0);
 	
 	private final ReadableElement topMostParent;
 	private final boolean skip;
+	private final int totalSize;
 	
-	public ReadablePacket(ReadableElement topMostParent, boolean skip)
+	public ReadablePacket(ReadableElement topMostParent, boolean skip, int totalSize)
 	{
 		this.topMostParent = topMostParent;
 		this.skip = skip;
+		this.totalSize = totalSize;
 	}
 	
 	/**
@@ -47,8 +49,8 @@ public class ReadablePacket
 	{
 		Validator.requireNonNull(consumer, "Consumer");
 		Deque<Object> queue = new ArrayDeque<>();
-		ReadResultImpl readResult = new ReadResultImpl(socket, queue);
-		LoopUtil loopUtil = new LoopUtil(this, socket, readResult, consumer);
+		ReadResultImpl readResult = new ReadResultImpl(socket, queue, consumer, totalSize);
+		LoopUtil loopUtil = new LoopUtil(this, socket, readResult);
 		performLoop(loopUtil, topMostParent);
 		return this;
 	}

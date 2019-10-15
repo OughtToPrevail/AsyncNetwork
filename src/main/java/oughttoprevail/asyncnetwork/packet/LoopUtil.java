@@ -27,19 +27,15 @@ class LoopUtil
 	private final ReadablePacket readablePacket;
 	private final Socket socket;
 	private final ReadResultImpl readResult;
-	private final Consumer<ReadResult> onFinish;
 	private int size;
 	private List<Runnable> afterThen = new ArrayList<>();
 	private boolean stopLoop;
-	private boolean finished;
-	private int totalRunningIterators;
 	
-	LoopUtil(ReadablePacket readablePacket, Socket socket, ReadResultImpl readResult, Consumer<ReadResult> onFinish)
+	LoopUtil(ReadablePacket readablePacket, Socket socket, ReadResultImpl readResult)
 	{
 		this.readablePacket = readablePacket;
 		this.socket = socket;
 		this.readResult = readResult;
-		this.onFinish = onFinish;
 	}
 	
 	void read(ReadableElement element)
@@ -64,31 +60,19 @@ class LoopUtil
 		}
 		size += element.size();
 		continueIterator(element.getChildren().iterator());
-		if(totalRunningIterators == 0 && !finished)
-		{
-			finished = true;
-			readResult.notifyWhen(size, () -> onFinish.accept(readResult));
-		}
 	}
 	
 	private void continueIterator(Iterator<ReadableElement> iterator)
 	{
-		totalRunningIterators++;
-		try
+		while(iterator.hasNext())
 		{
-			while(iterator.hasNext())
+			if(stopLoop)
 			{
-				if(stopLoop)
-				{
-					afterThen.add(() -> continueIterator(iterator));
-					return;
-				}
-				ReadableElement child = iterator.next();
-				readablePacket.performLoop(this, child);
+				afterThen.add(() -> continueIterator(iterator));
+				return;
 			}
-		} finally
-		{
-			totalRunningIterators--;
+			ReadableElement child = iterator.next();
+			readablePacket.performLoop(this, child);
 		}
 	}
 	

@@ -42,6 +42,7 @@ public class ReadablePacketBuilder
 	private ReadableElement topMostParent;
 	private ReadableElement currentReadableElement;
 	private final boolean skip;
+	private int totalSize;
 	
 	public ReadablePacketBuilder()
 	{
@@ -67,6 +68,7 @@ public class ReadablePacketBuilder
 	{
 		System.out.println("Add consumer");
 		currentReadableElement.add(consumer, size);
+		totalSize+=size;
 		return this;
 	}
 	
@@ -425,10 +427,10 @@ public class ReadablePacketBuilder
 	public ReadablePacket build()
 	{
 		//delete empty instructions
-		if(topMostParent.size() == 0 && topMostParent.getChildren().size() == 0)
+		if(totalSize == 0)
 		{
 			return ReadablePacket.EMPTY;
 		}
-		return new ReadablePacket(topMostParent, skip);
+		return new ReadablePacket(topMostParent, skip, totalSize);
 	}
 }

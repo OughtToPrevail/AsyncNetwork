@@ -19,20 +19,25 @@ import java.util.Deque;
 import java.util.Queue;
 
 import oughttoprevail.asyncnetwork.Socket;
+import oughttoprevail.asyncnetwork.util.Consumer;
 
 public class ReadResultImpl implements ReadResult
 {
 	private final Socket socket;
 	private final Deque<Object> results;
+	private int collected;
 	private final Object lock = new Object();
 	private Runnable runnable;
 	private int runnableRequestSize = -1;
-	private int collected;
+	private final Consumer<ReadResult> onFinish;
+	private final int totalSize;
 	
-	public ReadResultImpl(Socket socket, Deque<Object> results)
+	public ReadResultImpl(Socket socket, Deque<Object> results, Consumer<ReadResult> onFinish, int totalSize)
 	{
 		this.results = results;
 		this.socket = socket;
+		this.onFinish = onFinish;
+		this.totalSize = totalSize;
 	}
 	
 	/**
@@ -57,6 +62,10 @@ public class ReadResultImpl implements ReadResult
 				runnable = null;
 				System.out.println("Run runnable");
 				temp.run();
+			}
+			if(results.size() > totalSize)
+			{
+				onFinish.accept(this);
 			}
 		}
 	}
