@@ -18,12 +18,12 @@ package oughttoprevail.asyncnetwork.packet;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
-import oughttoprevail.asyncnetwork.exceptions.PacketClosedException;
 import oughttoprevail.asyncnetwork.Socket;
 import oughttoprevail.asyncnetwork.client.ClientSocket;
+import oughttoprevail.asyncnetwork.exceptions.PacketClosedException;
 import oughttoprevail.asyncnetwork.pool.PooledByteBuffer;
-import oughttoprevail.asyncnetwork.util.Validator;
 import oughttoprevail.asyncnetwork.util.Consumer;
+import oughttoprevail.asyncnetwork.util.Validator;
 
 public class WritablePacket
 {

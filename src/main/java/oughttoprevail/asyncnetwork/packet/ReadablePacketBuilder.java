@@ -39,7 +39,7 @@ public class ReadablePacketBuilder
 		return new ReadablePacketBuilder(skip);
 	}
 	
-	private ReadableElement topMostParent;
+	private final ReadableElement topMostParent;
 	private ReadableElement currentReadableElement;
 	private final boolean skip;
 	
@@ -63,9 +63,8 @@ public class ReadablePacketBuilder
 	 * to the {@link ReadResult}
 	 * @return this
 	 */
-	private ReadablePacketBuilder add(Consumer<ReadResultImpl> consumer, int size)
+	private ReadablePacketBuilder add(Consumer<ReadResult> consumer, int size)
 	{
-		System.out.println("Add consumer");
 		currentReadableElement.add(consumer, size);
 		return this;
 	}
@@ -73,35 +72,33 @@ public class ReadablePacketBuilder
 	/**
 	 * Invokes {@link #add(Consumer, int)} and uses the specified consumer to read from the
 	 * {@link Socket} a {@link ByteBuffer} then invokes the specified consumer with the
-	 * read {@link ByteBuffer} and the given {@link ReadResultImpl}.
+	 * read {@link ByteBuffer} and the given {@link ReadResult}.
 	 *
-	 * @param consumer to invoke with the read {@link ByteBuffer} and {@link ReadResultImpl}
+	 * @param consumer to invoke with the read {@link ByteBuffer} and {@link ReadResult}
 	 * @param bytes to read
 	 * @return this
 	 */
-	private ReadablePacketBuilder offerByteBuffer(BiConsumer<ByteBuffer, ReadResultImpl> consumer, int bytes)
+	private ReadablePacketBuilder offerByteBuffer(BiConsumer<ByteBuffer, ReadResult> consumer, int bytes)
 	{
-		return add((readResult -> readResult.socket().readByteBuffer(byteBuffer -> consumer.accept(byteBuffer,
-				readResult), bytes)), 1);
+		return add((readResult -> readResult.socket().readByteBuffer(byteBuffer -> consumer.accept(byteBuffer, readResult), bytes)), 1);
 	}
 	
 	/**
 	 * Invokes {@link #add(Consumer, int)} and uses the specified consumer to read from the
 	 * {@link Socket} a {@link ByteBuffer} then invokes the specified consumer with the
 	 * read {@link ByteBuffer}, then the specified passedNumber is invoked and the number returned
-	 * is added to the readResult if the specified skip is false, the returned numbere is also
+	 * is added to the readResult if the specified skip is false, the returned number is also
 	 * later used when invoking the specified consumer and when invoking {@link Socket#readByteBuffer(Consumer, int)}
 	 * as the length.
-	 * Then the final read byteBuffer is given to the {@link ReadResultImpl}.
+	 * Then the final read byteBuffer is given to the {@link ReadResult}.
 	 *
-	 * @param consumer to invoke with the read {@link ByteBuffer} and {@link ReadResultImpl}
+	 * @param consumer to invoke with the read {@link ByteBuffer} and {@link ReadResult}
 	 * @param passedNumber which will define how many bytes the read requires
 	 * @param skip determines whether this should add the length returned by the specified
 	 * passedNumber into the readResult
 	 * @return this
 	 */
-	private ReadablePacketBuilder offerByteBuffer(TriConsumer<ByteBuffer, ReadResultImpl, Integer> consumer,
-			PassedNumber passedNumber, boolean skip)
+	private ReadablePacketBuilder offerByteBuffer(TriConsumer<ByteBuffer, ReadResult, Integer> consumer, PassedNumber passedNumber, boolean skip)
 	{
 		Validator.requireNonNull(passedNumber, "PassedNumber");
 		return add(readResult -> readResult.socket().readByteBuffer(byteBuffer ->
@@ -153,8 +150,7 @@ public class ReadablePacketBuilder
 	public ReadablePacketBuilder bytes(PassedNumber passedNumber)
 	{
 		Validator.requireNonNull(passedNumber, "PassedNumber");
-		return offerByteBuffer((byteBuffer, readResult, length) -> readResult.add(Util.getBytes(byteBuffer, length)),
-				passedNumber, skip);
+		return offerByteBuffer((byteBuffer, readResult, length) -> readResult.add(Util.getBytes(byteBuffer, length)), passedNumber, skip);
 	}
 	
 	/**
@@ -289,34 +285,28 @@ public class ReadablePacketBuilder
 	 */
 	public ReadablePacketBuilder aString()
 	{
-		return offerByteBuffer((byteBuffer, readResult, length) -> readResult.add(new String(Util.getBytes(byteBuffer,
-				length), Util.UTF_8)), PassedNumber.PASSABLE_INTEGER, true);
+		return offerByteBuffer((byteBuffer, readResult, length) -> readResult.add(new String(Util.getBytes(byteBuffer, length), Util.UTF_8)),
+				PassedNumber.PASSABLE_INTEGER,
+				true);
 	}
 	
 	/**
-	 * Reads a single {@link Object}. If the specified serDes returns
-	 * {@code true} in {@link SerDes#isFixedLength()} then reads a {@link ByteBuffer} which
-	 * contains {@link SerDes#getSerializedLength(Object)} amount of bytes and deserializes it with
-	 * the specified serDes. If {@link SerDes#isFixedLength()} returns {@code false} then it first reads an
-	 * unsigned {@code short} which defines the length of the {@link Object} and then reads a
-	 * {@link ByteBuffer} and deserializes it with the specified serDes.
+	 * Reads a single {@link Object}.
 	 *
-	 * @param serDes which will deserialize the read {@link ByteBuffer}.
+	 * @param serDes which will deserialize to the {@link Object}.
 	 * @return this
 	 */
 	public ReadablePacketBuilder aObject(SerDes<?> serDes)
 	{
-		if(serDes.isFixedLength())
+		serDes.prepareDeserialization(this);
+		return conditioned(readResult ->
 		{
-			int serializedLength = serDes.getSerializedLength(null);
-			Validator.higherThan0(serializedLength, "SerializedLength");
-			return offerByteBuffer((byteBuffer, readResult) -> readResult.add(serDes.deserialize(byteBuffer,
-					serializedLength)), serializedLength);
-		} else
+			Object deserialized = serDes.deserialize(readResult);
+			readResult.add(deserialized);
+			return false;
+		}, ignored ->
 		{
-			return offerByteBuffer((byteBuffer, readResult, length) -> readResult.add(serDes.deserialize(byteBuffer,
-					length)), PassedNumber.PASSABLE_INTEGER, true);
-		}
+		});
 	}
 	
 	/**
@@ -346,14 +336,7 @@ public class ReadablePacketBuilder
 	 */
 	public ReadablePacketBuilder conditioned(Predicate<ReadResult> predicate, Consumer<ReadablePacketBuilder> consumer)
 	{
-		Validator.requireNonNull(predicate, "Condition");
-		Validator.requireNonNull(consumer, "Consumer");
-		ReadableElement newElement = new ReadableElement(predicate, null);
-		currentReadableElement.addChild(newElement);
-		ReadableElement previous = currentReadableElement;
-		currentReadableElement = newElement;
-		consumer.accept(this);
-		currentReadableElement = previous;
+		changeReadableElement(predicate, null, consumer);
 		return this;
 	}
 	
@@ -405,16 +388,20 @@ public class ReadablePacketBuilder
 	 * @param consumer which will add the read requests to be repeated
 	 * @return this
 	 */
-	public ReadablePacketBuilder repeatInstructions(PassedNumber passedNumber,
-			Consumer<ReadablePacketBuilder> consumer)
+	public ReadablePacketBuilder repeatInstructions(PassedNumber passedNumber, Consumer<ReadablePacketBuilder> consumer)
 	{
-		ReadableElement newElement = new ReadableElement(null, passedNumber);
+		changeReadableElement(null, passedNumber, consumer);
+		return this;
+	}
+	
+	private void changeReadableElement(Predicate<ReadResult> predicate, PassedNumber passedNumber, Consumer<ReadablePacketBuilder> consumer)
+	{
+		ReadableElement newElement = new ReadableElement(predicate, passedNumber);
 		currentReadableElement.addChild(newElement);
 		ReadableElement previous = currentReadableElement;
 		currentReadableElement = newElement;
 		consumer.accept(this);
 		currentReadableElement = previous;
-		return this;
 	}
 	
 	/**

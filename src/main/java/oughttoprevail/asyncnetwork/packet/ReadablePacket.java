@@ -47,7 +47,7 @@ public class ReadablePacket
 	{
 		Validator.requireNonNull(consumer, "Consumer");
 		Deque<Object> queue = new ArrayDeque<>();
-		ReadResultImpl readResult = new ReadResultImpl(socket, queue);
+		ReadResult readResult = new ReadResult(socket, queue);
 		LoopUtil loopUtil = new LoopUtil(this, socket, readResult, consumer);
 		performLoop(loopUtil, topMostParent);
 		return this;
@@ -71,10 +71,8 @@ public class ReadablePacket
 			loopUtil.getSocket().readByteBuffer(byteBuffer ->
 			{
 				Number value = timesToRepeat.apply(byteBuffer);
-				System.out.println("VALUE: " + value);
 				if(!skip)
 				{
-					System.out.println("add");
 					loopUtil.getReadResult().add(value);
 					loopUtil.incrementSize();
 				}

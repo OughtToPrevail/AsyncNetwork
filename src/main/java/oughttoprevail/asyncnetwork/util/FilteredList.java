@@ -19,22 +19,22 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class ExcludedList<E> implements Collection<E>
+public class FilteredList<E> implements Collection<E>
 {
 	private final Collection<E> collection;
-	private final Object[] excludedElements;
+	private final Object[] filteredElements;
 	
-	public ExcludedList(Collection<E> collection, Object... excludedElements)
+	public FilteredList(Collection<E> collection, Object... filteredElements)
 	{
 		this.collection = collection;
-		this.excludedElements = excludedElements;
+		this.filteredElements = filteredElements;
 	}
 	
 	private boolean isExcludedElement(Object element)
 	{
-		for(Object excludedElement : excludedElements)
+		for(Object filteredElement : filteredElements)
 		{
-			if(excludedElement == element)
+			if(filteredElement == element)
 			{
 				return true;
 			}

@@ -20,14 +20,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import oughttoprevail.asyncnetwork.server.ServerClientSocket;
-import oughttoprevail.asyncnetwork.server.ServerSocket;
 import oughttoprevail.asyncnetwork.exceptions.LoadException;
-import oughttoprevail.asyncnetwork.util.Util;
 import oughttoprevail.asyncnetwork.pool.PooledByteBuffer;
 import oughttoprevail.asyncnetwork.server.IndexedList;
-import oughttoprevail.asyncnetwork.util.writer.server.PendingWrite;
+import oughttoprevail.asyncnetwork.server.ServerClientSocket;
+import oughttoprevail.asyncnetwork.server.ServerSocket;
 import oughttoprevail.asyncnetwork.util.OS;
+import oughttoprevail.asyncnetwork.util.Util;
+import oughttoprevail.asyncnetwork.util.writer.server.PendingWrite;
 
 public class WindowsSelector implements Closeable
 {
@@ -90,7 +90,6 @@ public class WindowsSelector implements Closeable
 		registerClient0(serverSocket, clientSocket);
 	}
 	
-	
 	private static final int TIMEOUT_CODE = -2;
 	private final IndexedList<PendingWrite> pendingWrites = new IndexedList<>();
 	
@@ -113,7 +112,8 @@ public class WindowsSelector implements Closeable
 	public Object select(int timeout, long result) throws IOException
 	{
 		int index;
-		while((index = select0(handle, timeout, result)) == TIMEOUT_CODE);
+		while((index = select0(handle, timeout, result)) == TIMEOUT_CODE)
+			;
 		if(index == -1)
 		{
 			return -1;
@@ -183,8 +183,7 @@ public class WindowsSelector implements Closeable
 	 * @param pendingWrite to be called once the write has finished
 	 * @param length the amount of bytes that will be sent
 	 */
-	public void WSASend(int clientSocket, long writeBufferAddress, int length, PendingWrite pendingWrite)
-			throws IOException
+	public void WSASend(int clientSocket, long writeBufferAddress, int length, PendingWrite pendingWrite) throws IOException
 	{
 		int index = pendingWrites.index();
 		pendingWrites.add(index, pendingWrite);
@@ -273,12 +272,7 @@ public class WindowsSelector implements Closeable
 	 * @param bufferAddress the buffer address in which the new socket addresses will go
 	 * @return the new accepted client socket.
 	 */
-	private native int AcceptEx0(long handle,
-			int serverSocket,
-			int index,
-			int threads,
-			long bufferAddress,
-			int addressSize);
+	private native int AcceptEx0(long handle, int serverSocket, int index, int threads, long bufferAddress, int addressSize);
 	
 	/**
 	 * Receives specified length as bytes to the specified clientSocket which will be added to the
@@ -301,6 +295,5 @@ public class WindowsSelector implements Closeable
 	 * @param length the amount of bytes that will be sent
 	 * @param pendingWrite will be called once the WSASend has finished
 	 */
-	private native void WSASend0(int clientSocket, long writeBufferAddress, int length, int pendingWrite)
-			throws IOException;
+	private native void WSASend0(int clientSocket, long writeBufferAddress, int length, int pendingWrite) throws IOException;
 }

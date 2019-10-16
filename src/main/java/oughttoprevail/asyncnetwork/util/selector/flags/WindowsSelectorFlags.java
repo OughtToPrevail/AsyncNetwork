@@ -33,16 +33,16 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import oughttoprevail.asyncnetwork.util.Util;
 import oughttoprevail.asyncnetwork.pool.PooledByteBuffer;
 import oughttoprevail.asyncnetwork.server.AbstractServer;
 import oughttoprevail.asyncnetwork.server.IndexedList;
 import oughttoprevail.asyncnetwork.server.ServerClientSocket;
+import oughttoprevail.asyncnetwork.util.DisconnectionType;
 import oughttoprevail.asyncnetwork.util.UnsafeGetter;
+import oughttoprevail.asyncnetwork.util.Util;
 import oughttoprevail.asyncnetwork.util.Validator;
 import oughttoprevail.asyncnetwork.util.selector.WindowsSelector;
 import oughttoprevail.asyncnetwork.util.writer.server.PendingWrite;
-import oughttoprevail.asyncnetwork.util.DisconnectionType;
 
 public class WindowsSelectorFlags
 {
@@ -75,7 +75,7 @@ public class WindowsSelectorFlags
 		this.clients = clients;
 		this.selector = selector;
 		this.serverSocket = serverSocket;
-		Class socketChannelImpl = Class.forName("sun.nio.ch.SocketChannelImpl");
+		Class<?> socketChannelImpl = Class.forName("sun.nio.ch.SocketChannelImpl");
 		newSocketChannel = socketChannelImpl.getDeclaredConstructor(SelectorProvider.class, FileDescriptor.class, boolean.class);
 		newSocketChannel.setAccessible(true);
 		localAddress = findOffset(socketChannelImpl, "localAddress");

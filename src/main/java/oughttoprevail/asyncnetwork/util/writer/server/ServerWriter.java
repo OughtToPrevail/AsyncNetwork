@@ -24,19 +24,16 @@ import java.util.Queue;
 
 import oughttoprevail.asyncnetwork.ServerClientManager;
 import oughttoprevail.asyncnetwork.Socket;
-import oughttoprevail.asyncnetwork.util.Validator;
-import oughttoprevail.asyncnetwork.util.writer.Writer;
 import oughttoprevail.asyncnetwork.util.Consumer;
 import oughttoprevail.asyncnetwork.util.DisconnectionType;
+import oughttoprevail.asyncnetwork.util.Validator;
+import oughttoprevail.asyncnetwork.util.writer.Writer;
 
 public class ServerWriter implements Writer
 {
 	private final Queue<ServerPendingWrite> pendingWrites = new ArrayDeque<>();
 	
-	private void write(Socket socket,
-			ByteBuffer writeBuffer,
-			Consumer<ByteBuffer> onWriteFinished,
-			boolean continueWriting)
+	private void write(Socket socket, ByteBuffer writeBuffer, Consumer<ByteBuffer> onWriteFinished, boolean continueWriting)
 	{
 		if(!continueWriting)
 		{

@@ -26,16 +26,16 @@ class LoopUtil
 {
 	private final ReadablePacket readablePacket;
 	private final Socket socket;
-	private final ReadResultImpl readResult;
+	private final ReadResult readResult;
 	private final Consumer<ReadResult> onFinish;
 	private int size;
-	private List<Runnable> afterThen = new ArrayList<>();
+	private final List<Runnable> afterThen = new ArrayList<>();
 	private boolean stopLoop;
 	private int totalRunningIterators;
 	private int waitingTimesRepeat;
 	private boolean finished;
 	
-	LoopUtil(ReadablePacket readablePacket, Socket socket, ReadResultImpl readResult, Consumer<ReadResult> onFinish)
+	LoopUtil(ReadablePacket readablePacket, Socket socket, ReadResult readResult, Consumer<ReadResult> onFinish)
 	{
 		this.readablePacket = readablePacket;
 		this.socket = socket;
@@ -45,25 +45,23 @@ class LoopUtil
 	
 	void read(ReadableElement element)
 	{
-		Iterator<Consumer<ReadResultImpl>> iterator = element.getConsumers().iterator();
+		Iterator<Consumer<ReadResult>> iterator = element.getConsumers().iterator();
 		performReadIterator(element, iterator);
 	}
 	
-	private void performReadIterator(ReadableElement element, Iterator<Consumer<ReadResultImpl>> iterator)
+	private void performReadIterator(ReadableElement element, Iterator<Consumer<ReadResult>> iterator)
 	{
 		totalRunningIterators++;
 		try
 		{
 			while(iterator.hasNext())
 			{
-				System.out.println("Next");
 				if(stopLoop)
 				{
 					afterThen.add(() -> performReadIterator(element, iterator));
 					return;
 				}
-				Consumer<ReadResultImpl> consumer = iterator.next();
-				System.out.println("Accept consumer");
+				Consumer<ReadResult> consumer = iterator.next();
 				consumer.accept(readResult);
 			}
 			size += element.size();
@@ -105,16 +103,10 @@ class LoopUtil
 	
 	private void possiblyFinished()
 	{
-		System.out.println("Check has finished: " + totalRunningIterators + " " + waitingTimesRepeat + " " + finished + " " + stopLoop + " " + size);
 		if(totalRunningIterators == 0 && waitingTimesRepeat == 0 && !finished && !stopLoop)
 		{
 			finished = true;
-			System.out.println("Finished");
-			readResult.notifyWhen(size, () ->
-			{
-				System.out.println("onFinish");
-				onFinish.accept(readResult);
-			});
+			readResult.notifyWhen(size, () -> onFinish.accept(readResult));
 		}
 	}
 	
@@ -139,7 +131,7 @@ class LoopUtil
 		});
 	}
 	
-	ReadResultImpl getReadResult()
+	ReadResult getReadResult()
 	{
 		return readResult;
 	}

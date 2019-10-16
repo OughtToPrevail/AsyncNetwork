@@ -20,11 +20,11 @@ import java.nio.ByteBuffer;
 
 import oughttoprevail.asyncnetwork.ServerClientManager;
 import oughttoprevail.asyncnetwork.Socket;
+import oughttoprevail.asyncnetwork.util.Consumer;
 import oughttoprevail.asyncnetwork.util.Util;
 import oughttoprevail.asyncnetwork.util.Validator;
 import oughttoprevail.asyncnetwork.util.selector.WindowsSelector;
 import oughttoprevail.asyncnetwork.util.writer.Writer;
-import oughttoprevail.asyncnetwork.util.Consumer;
 
 public class WindowsWriter implements Writer
 {

@@ -20,10 +20,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 import oughttoprevail.asyncnetwork.Socket;
+import oughttoprevail.asyncnetwork.util.Consumer;
 import oughttoprevail.asyncnetwork.util.DisconnectionType;
 import oughttoprevail.asyncnetwork.util.Validator;
 import oughttoprevail.asyncnetwork.util.writer.Writer;
-import oughttoprevail.asyncnetwork.util.Consumer;
 
 public class ClientWriter implements Writer
 {

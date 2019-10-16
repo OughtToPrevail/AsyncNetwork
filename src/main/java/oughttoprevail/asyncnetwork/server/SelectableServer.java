@@ -27,10 +27,13 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 
 import oughttoprevail.asyncnetwork.exceptions.SelectException;
-import oughttoprevail.asyncnetwork.util.Util;
 import oughttoprevail.asyncnetwork.pool.PooledByteBuffer;
 import oughttoprevail.asyncnetwork.util.IndexesBuffer;
+import oughttoprevail.asyncnetwork.util.OS;
+import oughttoprevail.asyncnetwork.util.SelectorImplementation;
 import oughttoprevail.asyncnetwork.util.StatedCount;
+import oughttoprevail.asyncnetwork.util.ThreadCreator;
+import oughttoprevail.asyncnetwork.util.Util;
 import oughttoprevail.asyncnetwork.util.Validator;
 import oughttoprevail.asyncnetwork.util.selector.LinuxMacSelector;
 import oughttoprevail.asyncnetwork.util.selector.WindowsSelector;
@@ -38,9 +41,6 @@ import oughttoprevail.asyncnetwork.util.selector.flags.LinuxSelectorFlags;
 import oughttoprevail.asyncnetwork.util.selector.flags.MacSelectorFlags;
 import oughttoprevail.asyncnetwork.util.selector.flags.SelectorFlags;
 import oughttoprevail.asyncnetwork.util.selector.flags.WindowsSelectorFlags;
-import oughttoprevail.asyncnetwork.util.OS;
-import oughttoprevail.asyncnetwork.util.SelectorImplementation;
-import oughttoprevail.asyncnetwork.util.ThreadCreator;
 
 public abstract class SelectableServer extends AbstractServer
 {
@@ -73,11 +73,7 @@ public abstract class SelectableServer extends AbstractServer
 	 * @param threadsCount how many threads will be used with this {@link SelectableServer}
 	 * @param implementation the {@link SelectorImplementation} of this {@link SelectableServer}
 	 */
-	protected SelectableServer(int bufferSize,
-			int selectTimeout,
-			int selectArraySize,
-			int threadsCount,
-			SelectorImplementation implementation)
+	protected SelectableServer(int bufferSize, int selectTimeout, int selectArraySize, int threadsCount, SelectorImplementation implementation)
 	{
 		super(bufferSize, selectTimeout, selectArraySize, threadsCount);
 		if(implementation == null)
@@ -110,8 +106,7 @@ public abstract class SelectableServer extends AbstractServer
 					return newWindowsSelector(new WindowsSelector());
 				} else
 				{
-					manager().exception(new IllegalStateException(
-							"Operating System doesn't have an implementation, using Java implementations"));
+					manager().exception(new IllegalStateException("Operating System doesn't have an implementation, using Java implementations"));
 					return newJavaSelector();
 				}
 			}
@@ -162,8 +157,7 @@ public abstract class SelectableServer extends AbstractServer
 					selectorFlags = new MacSelectorFlags(this, getClientList());
 				} else
 				{
-					throw new UnsupportedOperationException(
-							"Selector created when OS can't be found. SelectableServer failed!");
+					throw new UnsupportedOperationException("Selector created when OS can't be found. SelectableServer failed!");
 				}
 				//Allocate a buffer the size of the array size multiplied by Util.INT_BYTES * 2 because each array element should contain 2 integers.
 				IndexesBuffer buffer = new IndexesBuffer(selectArraySize * (Util.INT_BYTES * 2));
@@ -210,8 +204,7 @@ public abstract class SelectableServer extends AbstractServer
 			return selector;
 		} catch(IOException e)
 		{
-			manager().exception(new IllegalStateException("Failed to copy native selector, using Java implementations",
-					e));
+			manager().exception(new IllegalStateException("Failed to copy native selector, using Java implementations", e));
 			return newJavaSelector();
 		}
 	}
@@ -237,7 +230,10 @@ public abstract class SelectableServer extends AbstractServer
 			{
 				executorService.execute(() ->
 				{
-					try(PooledByteBuffer pooledResult = new PooledByteBuffer(/*opcode*/Util.BYTE_BYTES + /*client index*/Util.INT_BYTES + /*is read*/Util.BYTE_BYTES + /*the received bytes*/Util.INT_BYTES))
+					try(PooledByteBuffer pooledResult = new PooledByteBuffer(/*opcode*/Util.BYTE_BYTES + /*client index*/
+					                                                                   Util.INT_BYTES + /*is read*/
+					                                                                   Util.BYTE_BYTES + /*the received bytes*/
+					                                                                   Util.INT_BYTES))
 					{
 						ByteBuffer result = pooledResult.getByteBuffer();
 						result.order(ByteOrder.nativeOrder());
@@ -276,8 +272,7 @@ public abstract class SelectableServer extends AbstractServer
 			return selector;
 		} catch(IOException | NoSuchMethodException | ClassNotFoundException | NoSuchFieldException e)
 		{
-			manager().exception(new IllegalStateException("Failed to use windows selector, using Java implementations",
-					e));
+			manager().exception(new IllegalStateException("Failed to use windows selector, using Java implementations", e));
 			return newJavaSelector();
 		}
 	}
@@ -396,11 +391,8 @@ public abstract class SelectableServer extends AbstractServer
 														manager().exception(e);
 														return;
 													}
-													client.manager()
-															.setSelectionKey(client.getSocketChannel()
-																	.register(javaSelector,
-																			SelectionKey.OP_READ,
-																			client));
+													client.manager().setSelectionKey(client.getSocketChannel()
+													                                       .register(javaSelector, SelectionKey.OP_READ, client));
 													clients.add(clientsIndex, client);
 													connected(client);
 												}

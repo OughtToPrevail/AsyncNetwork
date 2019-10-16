@@ -24,5 +24,4 @@ public class ClientSocketManager extends SocketManager
 		super(socket, readByteBuffer);
 	}
 	
-	
 }

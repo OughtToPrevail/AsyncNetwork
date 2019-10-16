@@ -21,7 +21,7 @@ import java.net.URL;
 import oughttoprevail.asyncnetwork.exceptions.LoadException;
 import oughttoprevail.asyncnetwork.util.OS;
 
-public interface NativeLoader
+interface NativeLoader
 {
 	/**
 	 * Loads the specified file + extension.
@@ -79,6 +79,10 @@ public interface NativeLoader
 	
 	static void exception(String selector) throws LoadException
 	{
-		throw new LoadException("Cannot load oughttoprevail.oughttoprevail.asyncnetwork.util.selector." + selector + ", Selector not implemented for " + OS.OS + "!");
+		throw new LoadException("Cannot load oughttoprevail.asyncnetwork.util.selector." +
+		                        selector +
+		                        ", Selector not implemented for " +
+		                        OS.OS +
+		                        "!");
 	}
 }

@@ -45,10 +45,10 @@ public class Reader
 	{
 		try
 		{
-			SocketChannel socketChannel =
-					socket.getSocketChannel();
+			SocketChannel socketChannel = socket.getSocketChannel();
 			ByteBuffer readBuffer = socket.manager().getReadByteBuffer().getByteBuffer();
-			while(tryRead(socket, socketChannel, readBuffer));
+			while(tryRead(socket, socketChannel, readBuffer))
+				;
 		} catch(IOException e)
 		{
 			Validator.handleRemoteHostCloseException(socket, e);

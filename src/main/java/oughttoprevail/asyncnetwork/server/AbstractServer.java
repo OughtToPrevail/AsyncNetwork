@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUvoid WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
@@ -123,7 +123,9 @@ public abstract class AbstractServer
 			public void close(CloseType closeType)
 			{
 				if(closed)
+				{
 					return;
+				}
 				try
 				{
 					serverSocketChannel.close();
@@ -402,7 +404,9 @@ public abstract class AbstractServer
 	public void onConnection(Consumer<ServerClientSocket> onConnection)
 	{
 		if(onConnection == null && binded)
+		{
 			throw new IllegalArgumentException("Cannot set onConnection to null after bind!");
+		}
 		this.onConnection.add(onConnection);
 	}
 	

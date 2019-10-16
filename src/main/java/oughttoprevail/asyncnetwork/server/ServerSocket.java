@@ -18,8 +18,8 @@ package oughttoprevail.asyncnetwork.server;
 import java.nio.channels.SocketChannel;
 
 import oughttoprevail.asyncnetwork.util.IndexesBuffer;
-import oughttoprevail.asyncnetwork.util.selector.LinuxMacSelector;
 import oughttoprevail.asyncnetwork.util.SelectorImplementation;
+import oughttoprevail.asyncnetwork.util.selector.LinuxMacSelector;
 
 public class ServerSocket extends SelectableServer
 {
@@ -46,11 +46,7 @@ public class ServerSocket extends SelectableServer
 	 * @param threadsCount how many threads will be used with this {@link ServerSocket}
 	 * @param implementation the {@link SelectorImplementation} of this {@link ServerSocket}
 	 */
-	public ServerSocket(int bufferSize,
-						int selectTimeout,
-						int selectArraySize,
-						int threadsCount,
-						SelectorImplementation implementation)
+	public ServerSocket(int bufferSize, int selectTimeout, int selectArraySize, int threadsCount, SelectorImplementation implementation)
 	{
 		super(bufferSize, selectTimeout, selectArraySize, threadsCount, implementation);
 	}

@@ -41,4 +41,5 @@ public enum DisconnectionType
 	 * The exception close {@link DisconnectionType} is used when an exception occurs. Also {@link
 	 * Socket#onException(Consumer)} consumer will be called.
 	 */
-	EXCEPTION_CLOSE}
+	EXCEPTION_CLOSE
+}

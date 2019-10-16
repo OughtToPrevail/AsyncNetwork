@@ -19,13 +19,13 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
 
-import oughttoprevail.asyncnetwork.util.Util;
 import oughttoprevail.asyncnetwork.server.AbstractServer;
 import oughttoprevail.asyncnetwork.server.IndexedList;
 import oughttoprevail.asyncnetwork.server.ServerClientSocket;
-import oughttoprevail.asyncnetwork.util.StatedCount;
-import oughttoprevail.asyncnetwork.util.selector.LinuxMacSelector;
 import oughttoprevail.asyncnetwork.util.Consumer;
+import oughttoprevail.asyncnetwork.util.StatedCount;
+import oughttoprevail.asyncnetwork.util.Util;
+import oughttoprevail.asyncnetwork.util.selector.LinuxMacSelector;
 
 public class SelectorFlags
 {

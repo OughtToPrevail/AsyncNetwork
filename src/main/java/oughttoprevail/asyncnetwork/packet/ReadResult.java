@@ -15,18 +15,88 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork.packet;
 
+import java.util.Deque;
 import java.util.Queue;
 
 import oughttoprevail.asyncnetwork.Socket;
 
-/**
- * Implementation at {@link oughttoprevail.asyncnetwork.packet.ReadResultImpl}
- */
-public interface ReadResult
+public class ReadResult
 {
-	static void throwEnsureHasNext() throws IllegalStateException
+	private final Socket socket;
+	private final Deque<Object> results;
+	private int collected;
+	private final Object lock = new Object();
+	private Runnable runnable;
+	private int runnableRequestSize = -1;
+	
+	public ReadResult(Socket socket, Deque<Object> results)
 	{
-		throw new IllegalStateException("No more results available!");
+		this.results = results;
+		this.socket = socket;
+	}
+	
+	/**
+	 * Adds the specified obj to the results queue.
+	 * If after adding the specified obj the results queue size is equal
+	 * to the size specified in the {@link ReadResult} constructor
+	 * then the runnable specified in the {@link ReadResult} constructor
+	 * is invoked.
+	 *
+	 * @param obj to add to the results queue
+	 */
+	void add(Object obj)
+	{
+		synchronized(lock)
+		{
+			results.add(obj);
+			if(runnable != null && results.size() >= runnableRequestSize)
+			{
+				Runnable temp = runnable;
+				runnableRequestSize = -1;
+				runnable = null;
+				temp.run();
+			}
+		}
+	}
+	
+	void notifyWhen(int requestSize, Runnable runnable)
+	{
+		synchronized(lock)
+		{
+			if(results.size() >= requestSize)
+			{
+				runnable.run();
+				return;
+			}
+			this.runnableRequestSize = requestSize;
+			this.runnable = runnable;
+		}
+	}
+	
+	/**
+	 * Throws an {@link IllegalStateException} if {@link #hasNext()} returns false.
+	 *
+	 * @throws IllegalStateException if {@link #hasNext()} returns false
+	 */
+	private void ensureHasNext()
+	{
+		if(!hasNext())
+		{
+			throw new IllegalStateException("No more results available!");
+		}
+	}
+	
+	/**
+	 * Casts the specified obj to T.
+	 *
+	 * @param obj to cast to T
+	 * @param <T> type of result to return
+	 * @return specified obj casted to T
+	 */
+	private <T> T cast(Object obj)
+	{
+		//if the types don't match a ClassCastException should be thrown to notify the user
+		return (T) obj;
 	}
 	
 	/**
@@ -35,7 +105,10 @@ public interface ReadResult
 	 * @param <T> type of result to return
 	 * @return {@link #pollFirst()}
 	 */
-	<T> T poll();
+	public <T> T poll()
+	{
+		return pollFirst();
+	}
 	
 	/**
 	 * Returns {@link #peekFirst()}.
@@ -43,7 +116,10 @@ public interface ReadResult
 	 * @param <T> type of result to return
 	 * @return {@link #peekFirst()}
 	 */
-	<T> T peek();
+	public <T> T peek()
+	{
+		return peekFirst();
+	}
 	
 	/**
 	 * Returns the first element by polling an {@link Object} from the read {@link Queue}
@@ -54,7 +130,14 @@ public interface ReadResult
 	 * @throws ClassCastException if the polled object isn't type T
 	 * @throws IllegalStateException if {@link #hasNext()} returns {@code false}
 	 */
-	<T> T pollFirst();
+	public <T> T pollFirst()
+	{
+		ensureHasNext();
+		
+		T t = cast(results.pollFirst());
+		collected++;
+		return t;
+	}
 	
 	/**
 	 * Returns the first element by peeking an {@link Object} from the read {@link Queue}
@@ -65,7 +148,12 @@ public interface ReadResult
 	 * @throws ClassCastException if the peeked object isn't type T
 	 * @throws IllegalStateException if {@link #hasNext()} returns {@code false}
 	 */
-	<T> T peekFirst();
+	public <T> T peekFirst()
+	{
+		ensureHasNext();
+		
+		return cast(results.peekFirst());
+	}
 	
 	/**
 	 * Returns the last element by polling an {@link Object} from the read {@link Queue}
@@ -76,7 +164,14 @@ public interface ReadResult
 	 * @throws ClassCastException if the polled object isn't type T
 	 * @throws IllegalStateException if {@link #hasNext()} returns {@code false}
 	 */
-	<T> T pollLast();
+	public <T> T pollLast()
+	{
+		ensureHasNext();
+		
+		T t = cast(results.pollLast());
+		collected++;
+		return t;
+	}
 	
 	/**
 	 * Returns the last element by peeking an {@link Object} from the read {@link Queue}
@@ -87,33 +182,50 @@ public interface ReadResult
 	 * @throws ClassCastException if the peeked object isn't type T
 	 * @throws IllegalStateException if {@link #hasNext()} returns {@code false}
 	 */
-	<T> T peekLast();
+	public <T> T peekLast()
+	{
+		ensureHasNext();
+		
+		return cast(results.peekLast());
+	}
 	
 	/**
 	 * Returns whether there is anymore data in the queue.
 	 *
 	 * @return whether there is anymore data in the queue
 	 */
-	boolean hasNext();
+	public boolean hasNext()
+	{
+		return !results.isEmpty();
+	}
 	
 	/**
 	 * Returns how many times entries have been polled from the {@link Queue} has been called.
 	 *
 	 * @return how many times entries have been polled from the {@link Queue} has been called
 	 */
-	int collected();
+	public int collected()
+	{
+		return collected;
+	}
 	
 	/**
 	 * Returns how much entries are available in this {@link Queue}.
 	 *
 	 * @return how much entries are available in this {@link Queue}
 	 */
-	int available();
+	public int available()
+	{
+		return results.size();
+	}
 	
 	/**
 	 * Returns the socket who obtained this {@link ReadResult}.
 	 *
 	 * @return the socket who obtained this {@link ReadResult}
 	 */
-	Socket socket();
+	public Socket socket()
+	{
+		return socket;
+	}
 }

@@ -19,10 +19,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import oughttoprevail.asyncnetwork.util.Util;
 import oughttoprevail.asyncnetwork.pool.PooledByteBuffer;
 import oughttoprevail.asyncnetwork.util.BiConsumer;
 import oughttoprevail.asyncnetwork.util.Consumer;
+import oughttoprevail.asyncnetwork.util.Util;
 
 public class WritablePacketBuilder
 {
@@ -103,7 +103,13 @@ public class WritablePacketBuilder
 		int totalLength = length - offset;
 		if(offset < 0 || length < 0 || length <= offset || bytes.length < totalLength)
 		{
-			throw new IndexOutOfBoundsException("Parameters (bytesLength: " + bytes.length + ", offset: " + offset + ", length: " + length + ") are wrong!");
+			throw new IndexOutOfBoundsException("Parameters (bytesLength: " +
+			                                    bytes.length +
+			                                    ", offset: " +
+			                                    offset +
+			                                    ", length: " +
+			                                    length +
+			                                    ") are wrong!");
 		}
 		return enqueue(byteBuffer -> byteBuffer.put(bytes, offset, length), totalLength);
 	}
@@ -240,22 +246,8 @@ public class WritablePacketBuilder
 	 */
 	public <T> WritablePacketBuilder putObject(T object, SerDes<T> serDes)
 	{
-		int serializedLength = serDes.getSerializedLength(object);
-		if(serializedLength <= 0)
-		{
-			throw new IllegalArgumentException("Serialized length cannot be less than 0!");
-		}
-		if(serDes.isFixedLength())
-		{
-			return enqueue(byteBuffer -> serDes.serialize(object, byteBuffer), serializedLength);
-		} else
-		{
-			return enqueue(byteBuffer ->
-			{
-				byteBuffer.putInt(serializedLength);
-				serDes.serialize(object, byteBuffer);
-			}, serializedLength + Util.INT_BYTES);
-		}
+		serDes.serialize(object, this);
+		return this;
 	}
 	
 	/**

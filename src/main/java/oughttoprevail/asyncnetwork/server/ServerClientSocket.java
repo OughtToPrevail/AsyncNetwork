@@ -46,7 +46,11 @@ public abstract class ServerClientSocket extends Socket
 	
 	public ServerClientSocket(ServerSocket server, SocketChannel socketChannel, int clientsIndex)
 	{
-		this(server, socketChannel, clientsIndex, new Reader(), server.manager().isWindowsImplementation() ? new WindowsWriter() : new ServerWriter());
+		this(server,
+				socketChannel,
+				clientsIndex,
+				new Reader(),
+				server.manager().isWindowsImplementation() ? new WindowsWriter() : new ServerWriter());
 	}
 	
 	public ServerClientSocket(ServerSocket server, SocketChannel socketChannel, int clientsIndex, Reader reader, Writer writer)

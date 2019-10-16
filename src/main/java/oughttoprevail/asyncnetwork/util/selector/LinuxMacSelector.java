@@ -66,7 +66,9 @@ public class LinuxMacSelector implements Closeable
 	{
 		fd = createSelector0(serverFd);
 		if(fd == -1)
+		{
 			return;
+		}
 		this.arrayAddress = createArray0(arraySize);
 	}
 	
@@ -145,8 +147,7 @@ public class LinuxMacSelector implements Closeable
 	 * @return how many indexes were put in the {@link IndexesBuffer}
 	 * @throws IOException if an exception has occurred while performing this operation
 	 */
-	private native int select0(int selectorFd, long indexesAddress, long eventsAddress, int eventsSize, int timeout)
-			throws IOException;
+	private native int select0(int selectorFd, long indexesAddress, long eventsAddress, int eventsSize, int timeout) throws IOException;
 	
 	/**
 	 * Closes the selector file descriptor.

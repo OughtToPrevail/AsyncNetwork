@@ -34,7 +34,7 @@ import java.util.TreeMap;
 import oughttoprevail.asyncnetwork.util.Util;
 
 /**
- * A pool that can contain both {@code HeapByteBuffer}s and {@code DirectByteBuffer}s.
+ * A direct {@link ByteBuffer} pool
  * <br><br>
  * {@link ByteBuffer}s dispatched from this pool will be reused, resulting in significant performance improvements from
  * not having to constantly allocate new {@link ByteBuffer}s.
