@@ -29,7 +29,7 @@ class LoopUtil
 	private final ReadResult readResult;
 	private final Consumer<ReadResult> onFinish;
 	private int size;
-	private final List<Runnable> afterThen = new ArrayList<>();
+	private final List<Iterator<Object>> afterThen = new ArrayList<>();
 	private boolean stopLoop;
 	private int totalRunningIterators;
 	private int waitingTimesRepeat;
@@ -45,11 +45,10 @@ class LoopUtil
 	
 	void read(ReadableElement element)
 	{
-		Iterator<Consumer<ReadResult>> iterator = element.getConsumers().iterator();
-		performReadIterator(element, iterator);
+		performIterator(element.getChildrenNConsumers().iterator());
 	}
 	
-	private void performReadIterator(ReadableElement element, Iterator<Consumer<ReadResult>> iterator)
+	private void performIterator(Iterator<Object> iterator)
 	{
 		totalRunningIterators++;
 		try
@@ -58,33 +57,27 @@ class LoopUtil
 			{
 				if(stopLoop)
 				{
-					afterThen.add(() -> performReadIterator(element, iterator));
+					afterThen.add(iterator);
 					return;
 				}
-				Consumer<ReadResult> consumer = iterator.next();
-				consumer.accept(readResult);
+				Object obj = iterator.next();
+				if(obj instanceof RegisteredConsumer)
+				{
+					RegisteredConsumer consumer = (RegisteredConsumer) obj;
+					consumer.getConsumer().accept(readResult);
+					size += consumer.getSize();
+					System.out.println("add to size: " + size + " " + consumer.getSize());
+				} else
+				{
+					ReadableElement child = (ReadableElement) obj;
+					readablePacket.performLoop(this, child);
+				}
 			}
-			size += element.size();
-			continueIterator(element.getChildren().iterator());
 		} finally
 		{
 			totalRunningIterators--;
 		}
 		possiblyFinished();
-	}
-	
-	private void continueIterator(Iterator<ReadableElement> iterator)
-	{
-		while(iterator.hasNext())
-		{
-			if(stopLoop)
-			{
-				afterThen.add(() -> continueIterator(iterator));
-				return;
-			}
-			ReadableElement child = iterator.next();
-			readablePacket.performLoop(this, child);
-		}
 	}
 	
 	void waitTimesRepeat()
@@ -103,6 +96,7 @@ class LoopUtil
 	
 	private void possiblyFinished()
 	{
+		System.out.println("Possibly finished: " + totalRunningIterators + " " + waitingTimesRepeat + " " + finished + " " + stopLoop);
 		if(totalRunningIterators == 0 && waitingTimesRepeat == 0 && !finished && !stopLoop)
 		{
 			finished = true;
@@ -113,20 +107,22 @@ class LoopUtil
 	void then(Runnable runnable)
 	{
 		stopLoop = true;
+		System.out.println("Then: " + size);
 		readResult.notifyWhen(size, () ->
 		{
+			System.out.println("Finished then");
 			stopLoop = false;
 			runnable.run();
-			Iterator<Runnable> iterator = afterThen.iterator();
+			Iterator<Iterator<Object>> iterator = afterThen.iterator();
 			while(iterator.hasNext())
 			{
 				if(stopLoop)
 				{
 					break;
 				}
-				Runnable after = iterator.next();
+				Iterator<Object> childrenNConsumersIterator = iterator.next();
 				iterator.remove();
-				after.run();
+				performIterator(childrenNConsumersIterator);
 			}
 			possiblyFinished();
 		});

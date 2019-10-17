@@ -23,11 +23,9 @@ import oughttoprevail.asyncnetwork.util.Predicate;
 
 class ReadableElement
 {
-	private final List<ReadableElement> children = new ArrayList<>();
-	private final List<Consumer<ReadResult>> consumers = new ArrayList<>();
+	private final List<Object> childrenNConsumers = new ArrayList<>();
 	private final Predicate<ReadResult> predicate;
 	private final PassedNumber timesToRepeat;
-	private int size;
 	
 	ReadableElement(Predicate<ReadResult> predicate, PassedNumber timesToRepeat)
 	{
@@ -36,21 +34,18 @@ class ReadableElement
 	}
 	
 	/**
-	 * Adds a child {@link ReadableElement} to this
+	 * Adds a either {@link ReadableElement} child or a {@link Consumer}
 	 *
-	 * @param child element to be added
+	 * @param obj to add
 	 */
-	void addChild(ReadableElement child)
+	void add(Object obj)
 	{
-		children.add(child);
+		childrenNConsumers.add(obj);
 	}
 	
-	/**
-	 * @return list of children
-	 */
-	public List<ReadableElement> getChildren()
+	public List<Object> getChildrenNConsumers()
 	{
-		return children;
+		return childrenNConsumers;
 	}
 	
 	/**
@@ -61,18 +56,7 @@ class ReadableElement
 	 */
 	void add(Consumer<ReadResult> consumer, int size)
 	{
-		this.size += size;
-		consumers.add(consumer);
-	}
-	
-	/**
-	 * Returns the consumers of this element.
-	 *
-	 * @return the consumers of this element
-	 */
-	List<Consumer<ReadResult>> getConsumers()
-	{
-		return consumers;
+		add(new RegisteredConsumer(consumer, size));
 	}
 	
 	/**
@@ -122,24 +106,10 @@ class ReadableElement
 	 */
 	void repeat()
 	{
-		int size = consumers.size();
+		int size = childrenNConsumers.size();
 		for(int i = 0; i < size; i++)
 		{
-			consumers.add(consumers.get(i));
+			childrenNConsumers.add(childrenNConsumers.get(i));
 		}
-		for(ReadableElement child : children)
-		{
-			child.repeat();
-		}
-	}
-	
-	/**
-	 * Returns the size of how many results will be added by this element.
-	 *
-	 * @return the size of how many results will be added by this element
-	 */
-	int size()
-	{
-		return size;
 	}
 }

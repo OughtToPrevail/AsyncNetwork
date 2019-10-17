@@ -397,7 +397,7 @@ public class ReadablePacketBuilder
 	private void changeReadableElement(Predicate<ReadResult> predicate, PassedNumber passedNumber, Consumer<ReadablePacketBuilder> consumer)
 	{
 		ReadableElement newElement = new ReadableElement(predicate, passedNumber);
-		currentReadableElement.addChild(newElement);
+		currentReadableElement.add(newElement);
 		ReadableElement previous = currentReadableElement;
 		currentReadableElement = newElement;
 		consumer.accept(this);
@@ -412,7 +412,7 @@ public class ReadablePacketBuilder
 	public ReadablePacket build()
 	{
 		//delete empty instructions
-		if(topMostParent.size() == 0 && topMostParent.getChildren().isEmpty())
+		if(topMostParent.getChildrenNConsumers().isEmpty())
 		{
 			return ReadablePacket.EMPTY;
 		}

@@ -54,6 +54,7 @@ public class ReadResult
 				Runnable temp = runnable;
 				runnableRequestSize = -1;
 				runnable = null;
+				System.out.println("RUN ADD");
 				temp.run();
 			}
 		}
@@ -65,6 +66,7 @@ public class ReadResult
 		{
 			if(results.size() >= requestSize)
 			{
+				System.out.println("NOTFIY WHEN");
 				runnable.run();
 				return;
 			}
