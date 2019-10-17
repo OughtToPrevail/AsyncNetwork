@@ -128,6 +128,7 @@ class LoopUtil
 				iterator.remove();
 				after.run();
 			}
+			possiblyFinished();
 		});
 	}
 	
