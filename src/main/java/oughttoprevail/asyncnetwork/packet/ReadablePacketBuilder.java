@@ -110,11 +110,7 @@ public class ReadablePacketBuilder
 				readResult.add(length);
 			}
 			Socket socket = readResult.socket();
-			if(intLength < 0)
-			{
-				socket.manager().exception(new IllegalArgumentException("Received length less then zero! (" + intLength + ")"));
-				return;
-			}
+			System.out.println("int: " + intLength + " " + readResult.peekLast() + " " + readResult);
 			socket.readByteBuffer(byteBuffer1 -> consumer.accept(byteBuffer1, readResult, intLength), intLength);
 		}, passedNumber.getSize()), skip ? 1 : 2);
 	}

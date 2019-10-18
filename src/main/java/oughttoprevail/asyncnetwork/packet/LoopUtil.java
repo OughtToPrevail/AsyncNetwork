@@ -45,10 +45,10 @@ class LoopUtil
 	
 	void read(ReadableElement element)
 	{
-		performIterator(element.getChildrenNConsumers().iterator());
+		performIterator(element.getChildrenNConsumers().iterator(), false);
 	}
 	
-	private void performIterator(Iterator<Object> iterator)
+	private void performIterator(Iterator<Object> iterator, boolean first)
 	{
 		totalRunningIterators++;
 		try
@@ -57,9 +57,17 @@ class LoopUtil
 			{
 				if(stopLoop)
 				{
-					afterThen.add(iterator);
+					System.out.println("Stop");
+					if(first)
+					{
+						afterThen.add(0, iterator);
+					} else
+					{
+						afterThen.add(iterator);
+					}
 					return;
 				}
+				System.out.println("Next");
 				Object obj = iterator.next();
 				if(obj instanceof RegisteredConsumer)
 				{
@@ -70,6 +78,7 @@ class LoopUtil
 				} else
 				{
 					ReadableElement child = (ReadableElement) obj;
+					System.out.println("perform child element : " + child.getTimesToRepeat());
 					readablePacket.performLoop(this, child);
 				}
 			}
@@ -77,6 +86,7 @@ class LoopUtil
 		{
 			totalRunningIterators--;
 		}
+		System.out.println("Finished iterator");
 		possiblyFinished();
 	}
 	
@@ -90,6 +100,7 @@ class LoopUtil
 		waitingTimesRepeat--;
 		if(!read)
 		{
+			System.out.println("Finished times repeat");
 			possiblyFinished();
 		}
 	}
@@ -118,12 +129,14 @@ class LoopUtil
 			{
 				if(stopLoop)
 				{
-					break;
+					return;
 				}
 				Iterator<Object> childrenNConsumersIterator = iterator.next();
 				iterator.remove();
-				performIterator(childrenNConsumersIterator);
+				System.out.println("perform iterator from then " + afterThen.size());
+				performIterator(childrenNConsumersIterator, true);
 			}
+			System.out.println("Invoke possibly finished");
 			possiblyFinished();
 		});
 	}

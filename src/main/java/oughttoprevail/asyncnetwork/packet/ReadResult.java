@@ -230,4 +230,10 @@ public class ReadResult
 	{
 		return socket;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return results.toString();
+	}
 }
