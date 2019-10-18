@@ -110,7 +110,6 @@ public class ReadablePacketBuilder
 				readResult.add(length);
 			}
 			Socket socket = readResult.socket();
-			System.out.println("int: " + intLength + " " + readResult.peekLast() + " " + readResult);
 			socket.readByteBuffer(byteBuffer1 -> consumer.accept(byteBuffer1, readResult, intLength), intLength);
 		}, passedNumber.getSize()), skip ? 1 : 2);
 	}
