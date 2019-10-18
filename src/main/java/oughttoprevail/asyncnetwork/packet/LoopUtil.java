@@ -31,6 +31,7 @@ class LoopUtil
 	private int size;
 	private final List<Iterator<Object>> afterThen = new ArrayList<>();
 	private boolean stopLoop;
+	private boolean inThen;
 	private int totalRunningIterators;
 	private int waitingTimesRepeat;
 	private boolean finished;
@@ -45,10 +46,10 @@ class LoopUtil
 	
 	void read(ReadableElement element)
 	{
-		performIterator(element.getChildrenNConsumers().iterator(), false);
+		performIterator(element.getChildrenNConsumers().iterator());
 	}
 	
-	private void performIterator(Iterator<Object> iterator, boolean first)
+	private void performIterator(Iterator<Object> iterator)
 	{
 		totalRunningIterators++;
 		try
@@ -58,7 +59,7 @@ class LoopUtil
 				if(stopLoop)
 				{
 					System.out.println("Stop");
-					if(first)
+					if(inThen)
 					{
 						afterThen.add(0, iterator);
 					} else
@@ -122,6 +123,7 @@ class LoopUtil
 		readResult.notifyWhen(size, () ->
 		{
 			System.out.println("Finished then");
+			inThen = true;
 			stopLoop = false;
 			runnable.run();
 			Iterator<Iterator<Object>> iterator = afterThen.iterator();
@@ -131,12 +133,13 @@ class LoopUtil
 				{
 					return;
 				}
+				System.out.println("perform iterator from then " + afterThen.size());
 				Iterator<Object> childrenNConsumersIterator = iterator.next();
 				iterator.remove();
-				System.out.println("perform iterator from then " + afterThen.size());
-				performIterator(childrenNConsumersIterator, true);
+				performIterator(childrenNConsumersIterator);
 			}
 			System.out.println("Invoke possibly finished");
+			inThen = false;
 			possiblyFinished();
 		});
 	}
