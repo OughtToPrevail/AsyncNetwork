@@ -83,6 +83,8 @@ public class ReadablePacketBuilder
 		return add((readResult -> readResult.socket().readByteBuffer(byteBuffer -> consumer.accept(byteBuffer, readResult), bytes)), 1);
 	}
 	
+	private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.allocate(0);
+	
 	/**
 	 * Invokes {@link #add(Consumer, int)} and uses the specified consumer to read from the
 	 * {@link Socket} a {@link ByteBuffer} then invokes the specified consumer with the
@@ -110,6 +112,11 @@ public class ReadablePacketBuilder
 				readResult.add(length);
 			}
 			Socket socket = readResult.socket();
+			if(intLength == 0)
+			{
+				consumer.accept(EMPTY_BYTE_BUFFER, readResult, intLength);
+				return;
+			}
 			socket.readByteBuffer(byteBuffer1 -> consumer.accept(byteBuffer1, readResult, intLength), intLength);
 		}, passedNumber.getSize()), skip ? 1 : 2);
 	}

@@ -58,7 +58,6 @@ class LoopUtil
 			{
 				if(stopLoop)
 				{
-					System.out.println("Stop");
 					if(inThen)
 					{
 						afterThen.add(0, iterator);
@@ -68,18 +67,15 @@ class LoopUtil
 					}
 					return;
 				}
-				System.out.println("Next");
 				Object obj = iterator.next();
 				if(obj instanceof RegisteredConsumer)
 				{
 					RegisteredConsumer consumer = (RegisteredConsumer) obj;
 					consumer.getConsumer().accept(readResult);
 					size += consumer.getSize();
-					System.out.println("add to size: " + size + " " + consumer.getSize());
 				} else
 				{
 					ReadableElement child = (ReadableElement) obj;
-					System.out.println("perform child element : " + child.getTimesToRepeat());
 					readablePacket.performLoop(this, child);
 				}
 			}
@@ -87,7 +83,6 @@ class LoopUtil
 		{
 			totalRunningIterators--;
 		}
-		System.out.println("Finished iterator");
 		possiblyFinished();
 	}
 	
@@ -101,14 +96,12 @@ class LoopUtil
 		waitingTimesRepeat--;
 		if(!read)
 		{
-			System.out.println("Finished times repeat");
 			possiblyFinished();
 		}
 	}
 	
 	private void possiblyFinished()
 	{
-		System.out.println("Possibly finished: " + totalRunningIterators + " " + waitingTimesRepeat + " " + finished + " " + stopLoop);
 		if(totalRunningIterators == 0 && waitingTimesRepeat == 0 && !finished && !stopLoop)
 		{
 			finished = true;
@@ -119,10 +112,8 @@ class LoopUtil
 	void then(Runnable runnable)
 	{
 		stopLoop = true;
-		System.out.println("Then: " + size);
 		readResult.notifyWhen(size, () ->
 		{
-			System.out.println("Finished then");
 			inThen = true;
 			stopLoop = false;
 			runnable.run();
@@ -133,12 +124,10 @@ class LoopUtil
 				{
 					return;
 				}
-				System.out.println("perform iterator from then " + afterThen.size());
 				Iterator<Object> childrenNConsumersIterator = iterator.next();
 				iterator.remove();
 				performIterator(childrenNConsumersIterator);
 			}
-			System.out.println("Invoke possibly finished");
 			inThen = false;
 			possiblyFinished();
 		});

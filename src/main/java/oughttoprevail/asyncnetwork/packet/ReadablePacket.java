@@ -57,7 +57,6 @@ public class ReadablePacket
 	{
 		if(element.hasPredicate())
 		{
-			System.out.println("Wait for predicate...");
 			loopUtil.then(() ->
 			{
 				if(element.test(loopUtil.getReadResult()))
@@ -78,10 +77,8 @@ public class ReadablePacket
 					loopUtil.incrementSize();
 				}
 				int intValue = value.intValue();
-				System.out.println("Repeat for " + intValue);
 				for(int i = 0; i < intValue; i++)
 				{
-					System.out.println("Perform read");
 					loopUtil.read(element);
 				}
 				loopUtil.finishedTimesRepeat(intValue > 0);

@@ -255,9 +255,8 @@ public abstract class SelectableServer extends AbstractServer
 								{
 									Validator.handleRemoteHostCloseException(client, e);
 								}
-							} catch(IOException e)
+							} catch(Throwable e)
 							{
-								e.printStackTrace();
 								Validator.exceptionClose(this, e);
 							} finally
 							{
