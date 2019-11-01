@@ -63,7 +63,6 @@ public class ReadResult
 		synchronized(lock)
 		{
 			results.add(obj);
-			System.out.println("Add " + results + " " + obj.getClass().getSimpleName() + ", " + obj);
 			if(whenReachedGoal != null && results.size() >= goal)
 			{
 				Runnable temp = whenReachedGoal;
@@ -77,7 +76,6 @@ public class ReadResult
 	{
 		synchronized(lock)
 		{
-			System.out.println("Notify when " + goal + " " + results.size());
 			if(results.size() >= goal)
 			{
 				runnable.run();
@@ -94,7 +92,6 @@ public class ReadResult
 	
 	void endSection()
 	{
-		System.out.println("End section add");
 		sectionAdd(new EndSection());
 	}
 	
@@ -103,7 +100,6 @@ public class ReadResult
 		futureAdd();
 		sectionEntries++;
 		results.add(obj);
-		System.out.println("Results: " + results);
 	}
 	
 	/**
@@ -176,7 +172,6 @@ public class ReadResult
 		
 		T t = cast(results.pollFirst());
 		collected++;
-		System.out.println("Poll first");
 		goal--;
 		return t;
 	}
@@ -192,7 +187,6 @@ public class ReadResult
 	 */
 	public <T> T peekFirst()
 	{
-		System.out.println("peek first");
 		ensureHasNext();
 		Object first = results.peekLast();
 		if(isSection(first))
@@ -226,7 +220,6 @@ public class ReadResult
 		
 		T t = cast(results.pollLast());
 		collected++;
-		System.out.println("Poll last");
 		goal--;
 		return t;
 	}
@@ -242,7 +235,6 @@ public class ReadResult
 	 */
 	public <T> T peekLast()
 	{
-		System.out.println("peek last");
 		ensureHasNext();
 		Object last = results.peekLast();
 		if(isSection(last))
@@ -277,7 +269,6 @@ public class ReadResult
 	
 	public ReadResult section(String name)
 	{
-		System.out.println("Try section " + name);
 		Iterator<Object> iterator = results.iterator();
 		while(iterator.hasNext())
 		{
@@ -286,7 +277,6 @@ public class ReadResult
 			{
 				if(((StartSection) object).getName().equals(name))
 				{
-					System.out.println("Found section with name " + name);
 					//start section here
 					Deque<Object> sectionResults = new ArrayDeque<>();
 					iterator.remove();
@@ -296,10 +286,8 @@ public class ReadResult
 						try
 						{
 							Object sectionResult = iterator.next();
-							System.out.println("Found value " + sectionResult);
 							if(sectionResult instanceof EndSection)
 							{
-								System.out.println("Section: " + sectionResults);
 								return new ReadResult(socket, sectionResults);
 							}
 							sectionResults.offer(sectionResult);

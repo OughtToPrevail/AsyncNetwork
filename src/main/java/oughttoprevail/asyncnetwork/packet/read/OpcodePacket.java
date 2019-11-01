@@ -59,7 +59,6 @@ public class OpcodePacket<E extends Enum<E>>
 			public void accept(ReadResult readResult)
 			{
 				int opcode = ((Number) readResult.poll()).intValue();
-				System.out.println("Opcode: " + opcode);
 				RegisteredPacket<E> packet = registeredPackets.get(opcode);
 				if(packet == null)
 				{

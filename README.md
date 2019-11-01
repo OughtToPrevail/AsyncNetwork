@@ -14,7 +14,7 @@
 <dependency>
     <groupId>com.github.oughttoprevail</groupId>
     <artifactId>AsyncNetwork</artifactId>
-    <version>1.2.7</version>
+    <version>1.2.8</version>
 </dependency>
 ```
 Here is <a href="https://search.maven.org/classic/#artifactdetails%7Ccom.github.oughttoprevail%7CAsyncNetwork%7C1.2.0%7Cjar">The Central Repository</a>.
@@ -36,7 +36,7 @@ server.onConnection(client ->
 	packet.read(client, readResult ->
 	{
 		byte value = readResult.poll();
-		System.out.println("VALUE " + value);
+		System.out.println("value=" + value);
 	});
 	client.onDisconnect(disconnectionType -> System.out.println("Disconnected" + disconnectionType));
 });

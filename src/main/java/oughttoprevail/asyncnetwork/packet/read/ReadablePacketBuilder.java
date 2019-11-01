@@ -83,7 +83,6 @@ public class ReadablePacketBuilder
 			try
 			{
 				Object result = function.apply(byteBuffer);
-				System.out.println("Add " + result);
 				readResult.add(result);
 			} catch(Throwable e)
 			{

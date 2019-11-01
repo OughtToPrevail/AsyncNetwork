@@ -43,22 +43,18 @@ class LoopUtil
 			Object obj = readInstructions.get(index++);
 			if(obj instanceof DependentObject)
 			{
-				System.out.println("Dependent object");
 				obj = ((DependentObject) obj).getUnderlyingObject();
 				readInstructions.remove(--index);
 			}
-			System.out.println("Index: " + (index - 1) + ", obj: " + obj + " " + hashCode());
 			if(obj instanceof Consumer)
 			{
 				//registered consumer
-				System.out.println("Accept consumer");
 				Consumer<ReadResult> consumer = (Consumer<ReadResult>) obj;
 				consumer.accept(readResult);
 				readResult.futureAdd();
 			} else if(obj instanceof BiConsumer)
 			{
 				//dependent consumer
-				System.out.println("Dependent");
 				BiConsumer<ReadablePacketBuilder, ReadResult> dependentConsumer = (BiConsumer<ReadablePacketBuilder, ReadResult>) obj;
 				notifyWhenGoal(() ->
 				{
@@ -69,14 +65,11 @@ class LoopUtil
 				return;
 			} else if(obj instanceof Deserializer)
 			{
-				System.out.println("Deserializer");
 				Deserializer deserializer = (Deserializer) obj;
 				notifyWhenGoal(() ->
 				{
-					System.out.println("Notified");
 					Object deserializedObject = deserializer.deserialize(readResult);
 					readResult.futureAdd();
-					System.out.println("Deserialized: " + deserializedObject);
 					readResult.add(deserializedObject);
 				});
 				return;
@@ -86,41 +79,28 @@ class LoopUtil
 				TimesRepeat timesRepeat = (TimesRepeat) obj;
 				TimesRepeatHelper helper;
 				readInstructions.set(index - 1, helper = new TimesRepeatHelper(index - 1 - timesRepeat.getLength(), timesRepeat.getTimesToRepeat()));
-				System.out.println("Return to " +
-				                   helper.beginIndex +
-				                   " " +
-				                   helper.remainingLoops +
-				                   " from " +
-				                   index +
-				                   ", length: " +
-				                   timesRepeat.getLength());
 				index = helper.beginIndex;
 			} else if(obj instanceof TimesRepeatHelper)
 			{
 				TimesRepeatHelper helper = (TimesRepeatHelper) obj;
-				System.out.println("Helper: " + helper.beginIndex + " " + helper.remainingLoops);
 				if(helper.loop())
 				{
 					readInstructions.remove(--index);
 				} else
 				{
-					System.out.println("Go back");
 					index = helper.beginIndex;
 				}
 			} else if(obj instanceof StartSection)
 			{
 				StartSection startSection = (StartSection) obj;
-				System.out.println("Start section");
 				notifyWhenGoal(() -> readResult.startSection(startSection));
 				return;
 			} else if(obj instanceof EndSection)
 			{
-				System.out.println("End section");
 				notifyWhenGoal(readResult::endSection);
 				return;
 			}
 		}
-		System.out.println("Finish");
 		readResult.notifyWhenGoal(() -> onFinish.accept(readResult));
 	}
 	

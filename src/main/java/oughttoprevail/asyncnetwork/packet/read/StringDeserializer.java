@@ -15,8 +15,6 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork.packet.read;
 
-import java.util.Arrays;
-
 import oughttoprevail.asyncnetwork.packet.Deserializer;
 import oughttoprevail.asyncnetwork.util.Util;
 
@@ -34,7 +32,6 @@ public class StringDeserializer implements Deserializer<String>
 	public String deserialize(ReadResult readResult)
 	{
 		byte[] bytes = readResult.pollLast();
-		System.out.println("Bytes: " + Arrays.toString(bytes));
 		return new String(bytes, Util.UTF_8);
 	}
 }

@@ -33,7 +33,6 @@ public class BytesDeserializer implements Deserializer<byte[]>
 	@Override
 	public void prepareDeserialization(ReadablePacketBuilder builder)
 	{
-		System.out.println("Prepare deserialization");
 		builder.section(PASSED_NUMBER_SECTION).aObject(passedNumber).endSection().dependent((builder1, readResult) ->
 		{
 			Number value = readResult.peekLast();
@@ -49,9 +48,7 @@ public class BytesDeserializer implements Deserializer<byte[]>
 	@Override
 	public byte[] deserialize(ReadResult readResult)
 	{
-		System.out.println("Bytes Deserialize");
 		int length = ((Number) readResult.section(PASSED_NUMBER_SECTION).poll()).intValue();
-		System.out.println("Has bytes: " + length + " " + readResult);
 		if(length == 0)
 		{
 			return new byte[]{};
