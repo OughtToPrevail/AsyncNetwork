@@ -25,8 +25,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import oughttoprevail.asyncnetwork.client.ClientSocket;
 import oughttoprevail.asyncnetwork.exceptions.SocketClosedException;
-import oughttoprevail.asyncnetwork.packet.OpcodePacketBuilder;
-import oughttoprevail.asyncnetwork.packet.ReadablePacket;
+import oughttoprevail.asyncnetwork.packet.read.OpcodePacketBuilder;
+import oughttoprevail.asyncnetwork.packet.read.ReadablePacket;
 import oughttoprevail.asyncnetwork.pool.PooledByteBuffer;
 import oughttoprevail.asyncnetwork.server.ServerSocket;
 import oughttoprevail.asyncnetwork.util.Consumer;

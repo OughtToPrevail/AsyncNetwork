@@ -146,7 +146,10 @@ public abstract class AbstractServer
 					}
 					for(ServerClientSocket client : getClients())
 					{
-						client.close();
+						if(client != null)
+						{
+							client.close();
+						}
 					}
 				} catch(IOException e)
 				{

@@ -13,14 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package oughttoprevail.asyncnetwork.packet;
+package oughttoprevail.asyncnetwork.packet.read;
 
 import java.nio.ByteBuffer;
 
-import oughttoprevail.asyncnetwork.util.Function;
+import oughttoprevail.asyncnetwork.packet.Deserializer;
 import oughttoprevail.asyncnetwork.util.Util;
 
-public interface PassedNumber<T extends Number> extends Function<ByteBuffer, T>
+public interface PassedNumber<T extends Number> extends Deserializer<T>
 {
 	/**
 	 * Returns a {@link Number} read from the specified byteBuffer.
@@ -28,8 +28,7 @@ public interface PassedNumber<T extends Number> extends Function<ByteBuffer, T>
 	 * @param byteBuffer containing the {@link Number} to return
 	 * @return a {@link Number} read from the specified byteBuffer
 	 */
-	@Override
-	T apply(ByteBuffer byteBuffer);
+	T convert(ByteBuffer byteBuffer);
 	
 	/**
 	 * Returns the size in bytes of the number returned from {@link PassedNumber}.
@@ -41,7 +40,19 @@ public interface PassedNumber<T extends Number> extends Function<ByteBuffer, T>
 	PassedNumber<Byte> PASSABLE_BYTE = new PassedNumber<Byte>()
 	{
 		@Override
-		public Byte apply(ByteBuffer byteBuffer)
+		public void prepareDeserialization(ReadablePacketBuilder builder)
+		{
+			builder.aByte();
+		}
+		
+		@Override
+		public Byte deserialize(ReadResult readResult)
+		{
+			return readResult.pollLast();
+		}
+		
+		@Override
+		public Byte convert(ByteBuffer byteBuffer)
 		{
 			return byteBuffer.get();
 		}
@@ -55,7 +66,19 @@ public interface PassedNumber<T extends Number> extends Function<ByteBuffer, T>
 	PassedNumber<Short> PASSABLE_UNSIGNED_BYTE = new PassedNumber<Short>()
 	{
 		@Override
-		public Short apply(ByteBuffer byteBuffer)
+		public void prepareDeserialization(ReadablePacketBuilder builder)
+		{
+			builder.aByte();
+		}
+		
+		@Override
+		public Short deserialize(ReadResult readResult)
+		{
+			return Util.toUnsignedShort(readResult.pollLast());
+		}
+		
+		@Override
+		public Short convert(ByteBuffer byteBuffer)
 		{
 			return Util.toUnsignedShort(byteBuffer.get());
 		}
@@ -69,7 +92,19 @@ public interface PassedNumber<T extends Number> extends Function<ByteBuffer, T>
 	PassedNumber<Short> PASSABLE_SHORT = new PassedNumber<Short>()
 	{
 		@Override
-		public Short apply(ByteBuffer byteBuffer)
+		public void prepareDeserialization(ReadablePacketBuilder builder)
+		{
+			builder.aShort();
+		}
+		
+		@Override
+		public Short deserialize(ReadResult readResult)
+		{
+			return readResult.pollLast();
+		}
+		
+		@Override
+		public Short convert(ByteBuffer byteBuffer)
 		{
 			return byteBuffer.getShort();
 		}
@@ -83,7 +118,19 @@ public interface PassedNumber<T extends Number> extends Function<ByteBuffer, T>
 	PassedNumber<Integer> PASSABLE_UNSIGNED_SHORT = new PassedNumber<Integer>()
 	{
 		@Override
-		public Integer apply(ByteBuffer byteBuffer)
+		public void prepareDeserialization(ReadablePacketBuilder builder)
+		{
+			builder.aShort();
+		}
+		
+		@Override
+		public Integer deserialize(ReadResult readResult)
+		{
+			return Util.toUnsignedInt(readResult.pollLast());
+		}
+		
+		@Override
+		public Integer convert(ByteBuffer byteBuffer)
 		{
 			return Util.toUnsignedInt(byteBuffer.getShort());
 		}
@@ -97,7 +144,19 @@ public interface PassedNumber<T extends Number> extends Function<ByteBuffer, T>
 	PassedNumber<Integer> PASSABLE_INTEGER = new PassedNumber<Integer>()
 	{
 		@Override
-		public Integer apply(ByteBuffer byteBuffer)
+		public void prepareDeserialization(ReadablePacketBuilder builder)
+		{
+			builder.aInt();
+		}
+		
+		@Override
+		public Integer deserialize(ReadResult readResult)
+		{
+			return readResult.pollLast();
+		}
+		
+		@Override
+		public Integer convert(ByteBuffer byteBuffer)
 		{
 			return byteBuffer.getInt();
 		}

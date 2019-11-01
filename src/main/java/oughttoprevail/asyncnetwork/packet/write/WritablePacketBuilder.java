@@ -13,12 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package oughttoprevail.asyncnetwork.packet;
+package oughttoprevail.asyncnetwork.packet.write;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import oughttoprevail.asyncnetwork.packet.Serializer;
 import oughttoprevail.asyncnetwork.pool.PooledByteBuffer;
 import oughttoprevail.asyncnetwork.util.BiConsumer;
 import oughttoprevail.asyncnetwork.util.Consumer;
@@ -238,15 +239,15 @@ public class WritablePacketBuilder
 	}
 	
 	/**
-	 * Puts the specified object in the packet after serialization made by specified serDes.
+	 * Puts the specified object in the packet after serialization made by specified serializer.
 	 *
 	 * @param object to put in the packet
-	 * @param serDes serializes the specified object
+	 * @param serializer serializes the specified object
 	 * @return this
 	 */
-	public <T> WritablePacketBuilder putObject(T object, SerDes<T> serDes)
+	public <T> WritablePacketBuilder putObject(T object, Serializer<T> serializer)
 	{
-		serDes.serialize(object, this);
+		serializer.serialize(object, this);
 		return this;
 	}
 	

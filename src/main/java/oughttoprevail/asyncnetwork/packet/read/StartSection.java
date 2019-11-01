@@ -13,21 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package oughttoprevail.asyncnetwork.exceptions;
+package oughttoprevail.asyncnetwork.packet.read;
 
-import oughttoprevail.asyncnetwork.packet.write.WritablePacket;
-
-/**
- * Thrown when a call to a closed {@link WritablePacket} has occurred.
- */
-public class PacketClosedException extends IllegalStateException
+class StartSection
 {
-	/**
-	 * Constructs an {@link PacketClosedException} which is thrown when a
-	 * call to a closed {@link WritablePacket} has occurred.
-	 */
-	public PacketClosedException()
-	{
+	private final String name;
 	
+	StartSection(String name)
+	{
+		this.name = name;
+	}
+	
+	String getName()
+	{
+		return name;
 	}
 }

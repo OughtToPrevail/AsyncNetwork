@@ -13,9 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package oughttoprevail.asyncnetwork.packet;
+package oughttoprevail.asyncnetwork.packet.read;
 
+import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.Queue;
 
 import oughttoprevail.asyncnetwork.Socket;
@@ -25,14 +27,26 @@ public class ReadResult
 	private final Socket socket;
 	private final Deque<Object> results;
 	private int collected;
+	private int sectionEntries;
 	private final Object lock = new Object();
-	private Runnable runnable;
-	private int runnableRequestSize = -1;
+	private Runnable whenReachedGoal;
+	private int goal;
 	
-	public ReadResult(Socket socket, Deque<Object> results)
+	public ReadResult(Socket socket)
+	{
+		this.results = new ArrayDeque<>();
+		this.socket = socket;
+	}
+	
+	private ReadResult(Socket socket, Deque<Object> results)
 	{
 		this.results = results;
 		this.socket = socket;
+	}
+	
+	void futureAdd()
+	{
+		goal++;
 	}
 	
 	/**
@@ -49,28 +63,47 @@ public class ReadResult
 		synchronized(lock)
 		{
 			results.add(obj);
-			if(runnable != null && results.size() >= runnableRequestSize)
+			System.out.println("Add " + results + " " + obj.getClass().getSimpleName() + ", " + obj);
+			if(whenReachedGoal != null && results.size() >= goal)
 			{
-				Runnable temp = runnable;
-				runnableRequestSize = -1;
-				runnable = null;
+				Runnable temp = whenReachedGoal;
+				whenReachedGoal = null;
 				temp.run();
 			}
 		}
 	}
 	
-	void notifyWhen(int requestSize, Runnable runnable)
+	void notifyWhenGoal(Runnable runnable)
 	{
 		synchronized(lock)
 		{
-			if(results.size() >= requestSize)
+			System.out.println("Notify when " + goal + " " + results.size());
+			if(results.size() >= goal)
 			{
 				runnable.run();
 				return;
 			}
-			this.runnableRequestSize = requestSize;
-			this.runnable = runnable;
+			this.whenReachedGoal = runnable;
 		}
+	}
+	
+	void startSection(StartSection startSection)
+	{
+		sectionAdd(startSection);
+	}
+	
+	void endSection()
+	{
+		System.out.println("End section add");
+		sectionAdd(new EndSection());
+	}
+	
+	private void sectionAdd(Object obj)
+	{
+		futureAdd();
+		sectionEntries++;
+		results.add(obj);
+		System.out.println("Results: " + results);
 	}
 	
 	/**
@@ -133,9 +166,18 @@ public class ReadResult
 	public <T> T pollFirst()
 	{
 		ensureHasNext();
+		//make sure there is no section at the start
+		Object object;
+		while((object = results.peekFirst()) != null && isSection(object))
+		{
+			results.pollFirst();
+			goal--;
+		}
 		
 		T t = cast(results.pollFirst());
 		collected++;
+		System.out.println("Poll first");
+		goal--;
 		return t;
 	}
 	
@@ -150,9 +192,16 @@ public class ReadResult
 	 */
 	public <T> T peekFirst()
 	{
+		System.out.println("peek first");
 		ensureHasNext();
+		Object first = results.peekLast();
+		if(isSection(first))
+		{
+			Iterator<Object> iterator = results.iterator();
+			return peekIterator(iterator);
+		}
 		
-		return cast(results.peekFirst());
+		return cast(first);
 	}
 	
 	/**
@@ -167,9 +216,18 @@ public class ReadResult
 	public <T> T pollLast()
 	{
 		ensureHasNext();
+		//make sure there is no section at the end
+		Object object;
+		while((object = results.peekLast()) != null && isSection(object))
+		{
+			results.pollLast();
+			goal--;
+		}
 		
 		T t = cast(results.pollLast());
 		collected++;
+		System.out.println("Poll last");
+		goal--;
 		return t;
 	}
 	
@@ -184,9 +242,79 @@ public class ReadResult
 	 */
 	public <T> T peekLast()
 	{
+		System.out.println("peek last");
 		ensureHasNext();
+		Object last = results.peekLast();
+		if(isSection(last))
+		{
+			Iterator<Object> iterator = results.descendingIterator();
+			return peekIterator(iterator);
+		}
 		
-		return cast(results.peekLast());
+		return cast(last);
+	}
+	
+	private <T> T peekIterator(Iterator<Object> iterator)
+	{
+		iterator.next();
+		while(iterator.hasNext())
+		{
+			Object next = iterator.next();
+			if(isSection(next))
+			{
+				continue;
+			}
+			return cast(next);
+		}
+		ensureHasNext();
+		return null;
+	}
+	
+	private boolean isSection(Object object)
+	{
+		return object instanceof StartSection || object instanceof EndSection;
+	}
+	
+	public ReadResult section(String name)
+	{
+		System.out.println("Try section " + name);
+		Iterator<Object> iterator = results.iterator();
+		while(iterator.hasNext())
+		{
+			Object object = iterator.next();
+			if(object instanceof StartSection)
+			{
+				if(((StartSection) object).getName().equals(name))
+				{
+					System.out.println("Found section with name " + name);
+					//start section here
+					Deque<Object> sectionResults = new ArrayDeque<>();
+					iterator.remove();
+					goal--;
+					while(iterator.hasNext())
+					{
+						try
+						{
+							Object sectionResult = iterator.next();
+							System.out.println("Found value " + sectionResult);
+							if(sectionResult instanceof EndSection)
+							{
+								System.out.println("Section: " + sectionResults);
+								return new ReadResult(socket, sectionResults);
+							}
+							sectionResults.offer(sectionResult);
+							collected++;
+						} finally
+						{
+							iterator.remove();
+							goal--;
+						}
+					}
+					throw new IllegalStateException("Found section with no end section");
+				}
+			}
+		}
+		throw new IllegalStateException("No section with the name: " + name);
 	}
 	
 	/**
@@ -216,7 +344,7 @@ public class ReadResult
 	 */
 	public int available()
 	{
-		return results.size();
+		return results.size() - sectionEntries;
 	}
 	
 	/**

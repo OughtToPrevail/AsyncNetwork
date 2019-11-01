@@ -128,7 +128,13 @@ public class WindowsSelectorFlags
 					PooledByteBuffer pooledReadBuffer = client.manager().getReadByteBuffer();
 					ByteBuffer readBuffer = pooledReadBuffer.getByteBuffer();
 					readBuffer.position(readBuffer.position() + totalBytes);
-					client.manager().callRequests();
+					try
+					{
+						client.manager().callRequests();
+					} catch(Throwable e)
+					{
+						client.manager().exception(e);
+					}
 					if(!client.isClosed())
 					{
 						int position = readBuffer.position();
@@ -198,21 +204,16 @@ public class WindowsSelectorFlags
 							selector.registerClient(serverSocket, socket);
 							client.manager().setFD(socket);
 							PooledByteBuffer readBuffer = client.manager().getReadByteBuffer();
-							try
-							{
-								selector.WSARecv(socket, readBuffer.address(), readBuffer.getByteBuffer().capacity());
-							} catch(IOException e)
-							{
-								client.close();
-								server.manager().exception(e);
-							}
+							selector.WSARecv(socket, readBuffer.address(), readBuffer.getByteBuffer().capacity());
 							server.connected(client);
 							return;
 						}
 					} catch(IOException e)
 					{
 						Validator.exceptionClose(client, e);
-						server.manager().exception(e);
+					} catch(Throwable e)
+					{
+						client.manager().exception(e);
 					}
 				} catch(IOException e)
 				{

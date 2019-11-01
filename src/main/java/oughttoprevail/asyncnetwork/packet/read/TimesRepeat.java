@@ -13,21 +13,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package oughttoprevail.asyncnetwork.exceptions;
+package oughttoprevail.asyncnetwork.packet.read;
 
-import oughttoprevail.asyncnetwork.packet.write.WritablePacket;
-
-/**
- * Thrown when a call to a closed {@link WritablePacket} has occurred.
- */
-public class PacketClosedException extends IllegalStateException
+class TimesRepeat
 {
-	/**
-	 * Constructs an {@link PacketClosedException} which is thrown when a
-	 * call to a closed {@link WritablePacket} has occurred.
-	 */
-	public PacketClosedException()
-	{
+	private final int timesToRepeat;
+	private final int length;
 	
+	TimesRepeat(int timesToRepeat, int length)
+	{
+		this.timesToRepeat = timesToRepeat;
+		this.length = length;
+	}
+	
+	int getTimesToRepeat()
+	{
+		return timesToRepeat;
+	}
+	
+	int getLength()
+	{
+		return length;
 	}
 }

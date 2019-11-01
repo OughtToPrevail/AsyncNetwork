@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package oughttoprevail.asyncnetwork.packet;
+package oughttoprevail.asyncnetwork.packet.read;
 
 import oughttoprevail.asyncnetwork.util.Consumer;
 
@@ -22,7 +22,7 @@ public class RegisteredPacket<E extends Enum<E>>
 	private final ReadablePacket packet;
 	private final Consumer<ReadResult> readResultConsumer;
 	
-	public RegisteredPacket(ReadablePacket packet, Consumer<ReadResult> readResultConsumer)
+	RegisteredPacket(ReadablePacket packet, Consumer<ReadResult> readResultConsumer)
 	{
 		this.packet = packet;
 		this.readResultConsumer = readResultConsumer;

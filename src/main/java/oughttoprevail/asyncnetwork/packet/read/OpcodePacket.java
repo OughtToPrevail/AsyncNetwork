@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package oughttoprevail.asyncnetwork.packet;
+package oughttoprevail.asyncnetwork.packet.read;
 
 import java.util.List;
 import java.util.Map;
@@ -24,20 +24,20 @@ import oughttoprevail.asyncnetwork.util.Consumer;
 
 public class OpcodePacket<E extends Enum<E>>
 {
-	private final PassedNumber passedNumber;
 	private final Map<Integer, RegisteredPacket<E>> registeredPackets;
 	private final List<BiConsumer<Socket, Integer>> onInvalidOpcode;
 	private final PermissionHandler<E> permissionHandler;
+	private final ReadablePacket packet;
 	
 	public OpcodePacket(Map<Integer, RegisteredPacket<E>> registeredPackets,
 	                    PassedNumber passedNumber,
 	                    List<BiConsumer<Socket, Integer>> onInvalidOpcode,
 	                    PermissionHandler<E> permissionHandler)
 	{
-		this.passedNumber = passedNumber;
 		this.registeredPackets = registeredPackets;
 		this.onInvalidOpcode = onInvalidOpcode;
 		this.permissionHandler = permissionHandler;
+		this.packet = ReadablePacketBuilder.create().aObject(passedNumber).build();
 	}
 	
 	/**
@@ -53,36 +53,48 @@ public class OpcodePacket<E extends Enum<E>>
 	 */
 	public OpcodePacket listen(Socket socket, boolean repeat)
 	{
-		socket.readByteBuffer(byteBuffer ->
+		packet.read(socket, new Consumer<ReadResult>()
 		{
-			int opcode = passedNumber.apply(byteBuffer).intValue();
-			RegisteredPacket<E> packet = registeredPackets.get(opcode);
-			if(packet == null)
+			@Override
+			public void accept(ReadResult readResult)
 			{
-				for(BiConsumer<Socket, Integer> invalidOpcodeConsumer : onInvalidOpcode)
+				int opcode = ((Number) readResult.poll()).intValue();
+				System.out.println("Opcode: " + opcode);
+				RegisteredPacket<E> packet = registeredPackets.get(opcode);
+				if(packet == null)
 				{
-					invalidOpcodeConsumer.accept(socket, opcode);
+					for(BiConsumer<Socket, Integer> invalidOpcodeConsumer : onInvalidOpcode)
+					{
+						invalidOpcodeConsumer.accept(socket, opcode);
+					}
+					return;
 				}
-				return;
-			}
-			Consumer<ReadResult> readResultConsumer = packet.getReadResultConsumer();
-			packet.getPacket().read(socket, permissionHandler == null ? readResultConsumer : readResult ->
-			{
-				//check here instead of outside since it may change
-				E permission = packet.getPermission();
-				if(permission != null && permissionHandler.hasPermission(socket, permission))
+				Consumer<ReadResult> readResultConsumer = packet.getReadResultConsumer();
+				packet.getPacket().read(socket, readResult1 ->
 				{
-					readResultConsumer.accept(readResult);
-				} else
-				{
-					permissionHandler.noPermission(socket, permission, opcode);
-				}
-			});
-			if(repeat)
-			{
-				listen(socket, true);
+					try
+					{
+						if(permissionHandler != null)
+						{
+							//check here instead of outside since it may change
+							E permission = packet.getPermission();
+							if(permission == null || !permissionHandler.hasPermission(socket, permission))
+							{
+								permissionHandler.noPermission(socket, permission, opcode);
+								return;
+							}
+						}
+						readResultConsumer.accept(readResult1);
+					} finally
+					{
+						if(repeat)
+						{
+							OpcodePacket.this.packet.read(socket, this);
+						}
+					}
+				});
 			}
-		}, passedNumber.getSize());
+		});
 		return this;
 	}
 	

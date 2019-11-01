@@ -14,7 +14,7 @@
 <dependency>
     <groupId>com.github.oughttoprevail</groupId>
     <artifactId>AsyncNetwork</artifactId>
-    <version>1.2.6</version>
+    <version>1.2.7</version>
 </dependency>
 ```
 Here is <a href="https://search.maven.org/classic/#artifactdetails%7Ccom.github.oughttoprevail%7CAsyncNetwork%7C1.2.0%7Cjar">The Central Repository</a>.

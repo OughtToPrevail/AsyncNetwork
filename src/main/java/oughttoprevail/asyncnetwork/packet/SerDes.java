@@ -15,6 +15,9 @@ limitations under the License.
 */
 package oughttoprevail.asyncnetwork.packet;
 
+import oughttoprevail.asyncnetwork.packet.read.ReadResult;
+import oughttoprevail.asyncnetwork.packet.write.WritablePacketBuilder;
+
 /**
  * A serializer and deserializer that puts an {@link Object} {@link T} into a {@link WritablePacketBuilder} and
  * reverses the {@link ReadResult} into the same {@link Object} {@link T}.
@@ -23,11 +26,6 @@ package oughttoprevail.asyncnetwork.packet;
  *
  * @param <T> object which will be serialized and deserialized
  */
-public interface SerDes<T>
+public interface SerDes<T> extends Serializer<T>, Deserializer<T>
 {
-	void serialize(T t, WritablePacketBuilder builder);
-	
-	void prepareDeserialization(ReadablePacketBuilder builder);
-	
-	T deserialize(ReadResult readResult);
 }

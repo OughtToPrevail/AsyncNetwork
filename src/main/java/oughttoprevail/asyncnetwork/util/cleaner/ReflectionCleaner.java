@@ -69,10 +69,7 @@ public class ReflectionCleaner implements Cleaner
 			{
 				Object cleaner = CLEANER_FIELD.get(directByteBuffer);
 				CLEAN.invoke(cleaner);
-			} catch(IllegalAccessException e)
-			{
-				e.printStackTrace();
-			} catch(InvocationTargetException e)
+			} catch(IllegalAccessException | InvocationTargetException e)
 			{
 				e.printStackTrace();
 			}
@@ -82,10 +79,7 @@ public class ReflectionCleaner implements Cleaner
 			try
 			{
 				CLEAN.invoke(cleaner);
-			} catch(IllegalAccessException e)
-			{
-				e.printStackTrace();
-			} catch(InvocationTargetException e)
+			} catch(IllegalAccessException | InvocationTargetException e)
 			{
 				e.printStackTrace();
 			}

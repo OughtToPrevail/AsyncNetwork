@@ -13,28 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package oughttoprevail.asyncnetwork.packet;
+package oughttoprevail.asyncnetwork.packet.read;
 
-import oughttoprevail.asyncnetwork.util.Consumer;
-
-class RegisteredConsumer
+public class DependentObject
 {
-	private final Consumer<ReadResult> consumer;
-	private final int size;
+	private final Object underlyingObject;
 	
-	RegisteredConsumer(Consumer<ReadResult> consumer, int size)
+	public DependentObject(Object underlyingObject)
 	{
-		this.consumer = consumer;
-		this.size = size;
+		this.underlyingObject = underlyingObject;
 	}
 	
-	Consumer<ReadResult> getConsumer()
+	public Object getUnderlyingObject()
 	{
-		return consumer;
-	}
-	
-	int getSize()
-	{
-		return size;
+		return underlyingObject;
 	}
 }
