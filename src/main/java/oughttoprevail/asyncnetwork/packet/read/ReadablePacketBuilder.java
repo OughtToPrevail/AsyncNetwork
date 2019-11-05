@@ -378,6 +378,15 @@ public class ReadablePacketBuilder
 	 */
 	public ReadablePacketBuilder repeatInstructions(int timesToRepeat, Consumer<ReadablePacketBuilder> consumer)
 	{
+		if(timesToRepeat <= 0)
+		{
+			return this;
+		}
+		if(timesToRepeat == 1)
+		{
+			consumer.accept(this);
+			return this;
+		}
 		timesRepeat++;
 		int sizeBefore = readInstructions.size();
 		consumer.accept(this);
