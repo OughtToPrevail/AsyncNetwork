@@ -112,7 +112,7 @@ public class ClientSocket extends Socket
 			{
 				consumer.accept(e);
 			}
-			manager().exception(e);
+			Validator.exceptionClose(this, e);
 			return;
 		}
 		ThreadCreator.newThread(CLIENT_THREAD_NAME, () ->
