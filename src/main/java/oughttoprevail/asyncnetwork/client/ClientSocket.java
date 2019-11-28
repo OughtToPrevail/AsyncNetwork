@@ -25,6 +25,7 @@ import java.util.List;
 
 import oughttoprevail.asyncnetwork.ClientSocketManager;
 import oughttoprevail.asyncnetwork.Socket;
+import oughttoprevail.asyncnetwork.util.Consumer;
 import oughttoprevail.asyncnetwork.util.ExceptionThrower;
 import oughttoprevail.asyncnetwork.util.ThreadCreator;
 import oughttoprevail.asyncnetwork.util.Validator;
@@ -81,6 +82,7 @@ public class ClientSocket extends Socket
 	 * Whether this client is currently connected
 	 */
 	private boolean connected;
+	private int connectionTimeout = -1;
 	
 	/**
 	 * The name used when creating the client {@link Thread}.
@@ -97,25 +99,36 @@ public class ClientSocket extends Socket
 	{
 		try
 		{
-			socketChannel.connect(address);
-			ThreadCreator.newThread(CLIENT_THREAD_NAME, () ->
+			if(connectionTimeout == -1)
 			{
-				while(!isClosed())
-				{
-					manager().callRead();
-				}
-			});
-			connected = true;
-			for(Runnable connectRunnable : onConnect)
+				socketChannel.connect(address);
+			} else
 			{
-				connectRunnable.run();
+				socketChannel.socket().connect(address, connectionTimeout);
 			}
-			//clear since no more than one connection can occur per client.
-			onConnect.clear();
 		} catch(IOException e)
 		{
-			Validator.exceptionClose(this, e);
+			for(Consumer<IOException> consumer : onConnectionFailure)
+			{
+				consumer.accept(e);
+			}
+			manager().exception(e);
+			return;
 		}
+		ThreadCreator.newThread(CLIENT_THREAD_NAME, () ->
+		{
+			while(!isClosed())
+			{
+				manager().callRead();
+			}
+		});
+		connected = true;
+		for(Runnable connectRunnable : onConnect)
+		{
+			connectRunnable.run();
+		}
+		//clear since no more than one connection can occur per client.
+		onConnect.clear();
 	}
 	
 	/**
@@ -164,6 +177,33 @@ public class ClientSocket extends Socket
 		{
 			this.onConnect.add(onConnect);
 		}
+	}
+	
+	/**
+	 * List of consumers to be invoked when a connection failure has occurred
+	 */
+	private final List<Consumer<IOException>> onConnectionFailure = new ArrayList<>();
+	
+	/**
+	 * @param onConnectionFailure consumer to be invoked if connection establishment has failed
+	 */
+	public void onConnectionFailure(Consumer<IOException> onConnectionFailure)
+	{
+		this.onConnectionFailure.add(onConnectionFailure);
+	}
+	
+	/**
+	 * Sets the timeout in milliseconds for a connection to the specified timeout
+	 *
+	 * @param timeout to set in milliseconds, must be higher or equal to zero
+	 */
+	public void setConnectionTimeout(int timeout)
+	{
+		if(timeout < 0)
+		{
+			throw new IllegalArgumentException("Timeout must be higher or equal to zero!");
+		}
+		this.connectionTimeout = timeout;
 	}
 	
 	/**
